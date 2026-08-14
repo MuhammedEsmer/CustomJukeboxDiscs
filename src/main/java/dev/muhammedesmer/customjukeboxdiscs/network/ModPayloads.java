@@ -5,6 +5,12 @@ import dev.muhammedesmer.customjukeboxdiscs.network.payload.UploadBeginResponse;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.UploadChunk;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.UploadFinish;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.UploadResult;
+import dev.muhammedesmer.customjukeboxdiscs.network.payload.DownloadChunk;
+import dev.muhammedesmer.customjukeboxdiscs.network.payload.JukeboxPlay;
+import dev.muhammedesmer.customjukeboxdiscs.network.payload.JukeboxStop;
+import dev.muhammedesmer.customjukeboxdiscs.network.payload.TrackBegin;
+import dev.muhammedesmer.customjukeboxdiscs.network.payload.TrackRequest;
+import dev.muhammedesmer.customjukeboxdiscs.network.payload.TrackUnavailable;
 import java.util.Objects;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
@@ -34,9 +40,21 @@ public final class ModPayloads {
                 (payload, context) -> serverHandler.handle(payload, context));
         registrar.playToServer(UploadFinish.TYPE, UploadFinish.STREAM_CODEC,
                 (payload, context) -> serverHandler.handle(payload, context));
+        registrar.playToServer(TrackRequest.TYPE, TrackRequest.STREAM_CODEC,
+                (payload, context) -> serverHandler.handle(payload, context));
         registrar.playToClient(UploadBeginResponse.TYPE, UploadBeginResponse.STREAM_CODEC,
                 (payload, context) -> clientHandler.handle(payload, context));
         registrar.playToClient(UploadResult.TYPE, UploadResult.STREAM_CODEC,
+                (payload, context) -> clientHandler.handle(payload, context));
+        registrar.playToClient(JukeboxPlay.TYPE, JukeboxPlay.STREAM_CODEC,
+                (payload, context) -> clientHandler.handle(payload, context));
+        registrar.playToClient(JukeboxStop.TYPE, JukeboxStop.STREAM_CODEC,
+                (payload, context) -> clientHandler.handle(payload, context));
+        registrar.playToClient(TrackBegin.TYPE, TrackBegin.STREAM_CODEC,
+                (payload, context) -> clientHandler.handle(payload, context));
+        registrar.playToClient(DownloadChunk.TYPE, DownloadChunk.STREAM_CODEC,
+                (payload, context) -> clientHandler.handle(payload, context));
+        registrar.playToClient(TrackUnavailable.TYPE, TrackUnavailable.STREAM_CODEC,
                 (payload, context) -> clientHandler.handle(payload, context));
     }
 
@@ -56,6 +74,11 @@ public final class ModPayloads {
             public void handle(UploadFinish payload, IPayloadContext context) {
                 context.disconnect(net.minecraft.network.chat.Component.literal("Custom Jukebox Discs is not ready"));
             }
+
+            @Override
+            public void handle(TrackRequest payload, IPayloadContext context) {
+                context.disconnect(net.minecraft.network.chat.Component.literal("Custom Jukebox Discs is not ready"));
+            }
         };
 
         void handle(UploadBeginRequest payload, IPayloadContext context);
@@ -63,6 +86,8 @@ public final class ModPayloads {
         void handle(UploadChunk payload, IPayloadContext context);
 
         void handle(UploadFinish payload, IPayloadContext context);
+
+        void handle(TrackRequest payload, IPayloadContext context);
     }
 
     public interface ClientHandler {
@@ -74,10 +99,22 @@ public final class ModPayloads {
             @Override
             public void handle(UploadResult payload, IPayloadContext context) {
             }
+
+            @Override public void handle(JukeboxPlay payload, IPayloadContext context) { }
+            @Override public void handle(JukeboxStop payload, IPayloadContext context) { }
+            @Override public void handle(TrackBegin payload, IPayloadContext context) { }
+            @Override public void handle(DownloadChunk payload, IPayloadContext context) { }
+            @Override public void handle(TrackUnavailable payload, IPayloadContext context) { }
         };
 
         void handle(UploadBeginResponse payload, IPayloadContext context);
 
         void handle(UploadResult payload, IPayloadContext context);
+
+        void handle(JukeboxPlay payload, IPayloadContext context);
+        void handle(JukeboxStop payload, IPayloadContext context);
+        void handle(TrackBegin payload, IPayloadContext context);
+        void handle(DownloadChunk payload, IPayloadContext context);
+        void handle(TrackUnavailable payload, IPayloadContext context);
     }
 }

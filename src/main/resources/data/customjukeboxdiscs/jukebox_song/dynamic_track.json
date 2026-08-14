@@ -1,0 +1,6 @@
+{
+  "sound_event": "customjukeboxdiscs:dynamic_track",
+  "description": { "translate": "jukebox_song.customjukeboxdiscs.dynamic_track" },
+  "length_in_seconds": 600.0,
+  "comparator_output": 15
+}

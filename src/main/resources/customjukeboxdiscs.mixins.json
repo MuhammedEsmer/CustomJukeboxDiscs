@@ -1,0 +1,7 @@
+{
+  "required": true,
+  "package": "dev.muhammedesmer.customjukeboxdiscs.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": ["JukeboxBlockEntityMixin"],
+  "injectors": { "defaultRequire": 1 }
+}

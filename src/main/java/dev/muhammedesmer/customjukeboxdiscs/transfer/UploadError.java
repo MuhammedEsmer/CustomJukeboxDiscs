@@ -18,5 +18,6 @@ public enum UploadError {
     DURATION_LIMIT,
     INCOMPLETE_UPLOAD,
     SESSION_NOT_FOUND,
+    INVALID_WRITER,
     STORAGE_FAILURE
 }

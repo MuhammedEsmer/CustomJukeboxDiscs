@@ -16,7 +16,7 @@ final class UploadPayloadCodecTest {
     @Test
     void beginRequestRoundTrips() {
         UploadBeginRequest expected = new UploadBeginRequest(
-                "a".repeat(64), 10_000, AudioFormat.OGG, "Track");
+                "a".repeat(64), 10_000, AudioFormat.OGG, "Track", 42L);
         FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
 
         UploadBeginRequest.STREAM_CODEC.encode(buffer, expected);

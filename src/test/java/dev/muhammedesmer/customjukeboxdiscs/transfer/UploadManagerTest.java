@@ -131,6 +131,21 @@ final class UploadManagerTest {
     }
 
     @Test
+    void changedWriterRejectsBeforePermanentCommit() throws Exception {
+        byte[] audio = fixtureBytes("one_second.mp3");
+        String hash = sha256(audio);
+        BeginUploadResult begin = begin(audio.length, hash, 0);
+        appendAll(begin.sessionId(), audio);
+
+        FinishUploadResult result = manager.finish(PLAYER, begin.sessionId(), hash, () -> false).join();
+
+        assertEquals(UploadError.INVALID_WRITER, result.error());
+        assertTrue(catalog.tracks().isEmpty());
+        assertFalse(Files.exists(worldDirectory.resolve("customjukeboxdiscs/tracks")
+                .resolve(hash.substring(0, 2)).resolve(hash + ".mp3")));
+    }
+
+    @Test
     void existingServerHashSkipsUpload() throws Exception {
         byte[] audio = fixtureBytes("one_second.mp3");
         String hash = sha256(audio);

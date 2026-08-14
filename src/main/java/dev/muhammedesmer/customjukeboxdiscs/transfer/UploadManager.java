@@ -28,6 +28,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.LongSupplier;
+import java.util.function.BooleanSupplier;
 
 public final class UploadManager {
     public static final int HARD_MAX_CHUNK_BYTES = 31 * 1024;
@@ -142,6 +143,11 @@ public final class UploadManager {
     }
 
     public CompletableFuture<FinishUploadResult> finish(UUID playerId, UUID sessionId, String clientHash) {
+        return finish(playerId, sessionId, clientHash, () -> true);
+    }
+
+    public CompletableFuture<FinishUploadResult> finish(
+            UUID playerId, UUID sessionId, String clientHash, BooleanSupplier beforeCommit) {
         UploadSession session;
         synchronized (this) {
             session = sessions.remove(sessionId);
@@ -171,7 +177,7 @@ public final class UploadManager {
         }
 
         return CompletableFuture.supplyAsync(() -> inspect(session), ioExecutor)
-                .thenApplyAsync(prepared -> finalizeUpload(session, prepared), serverExecutor)
+                .thenApplyAsync(prepared -> finalizeUpload(session, prepared, beforeCommit), serverExecutor)
                 .exceptionally(exception -> {
                     cleanup(session);
                     return FinishUploadResult.failed(UploadError.STORAGE_FAILURE);
@@ -183,6 +189,11 @@ public final class UploadManager {
                 .filter(session -> session.owner.equals(playerId))
                 .toList()
                 .forEach(this::cancelSession);
+    }
+
+    public synchronized void cancel(UUID playerId, UUID sessionId) {
+        UploadSession session = sessions.get(sessionId);
+        if (session != null && session.owner.equals(playerId)) cancelSession(session);
     }
 
     public synchronized void expireTimedOut() {
@@ -226,10 +237,15 @@ public final class UploadManager {
         }
     }
 
-    private FinishUploadResult finalizeUpload(UploadSession session, PreparedUpload prepared) {
+    private FinishUploadResult finalizeUpload(
+            UploadSession session, PreparedUpload prepared, BooleanSupplier beforeCommit) {
         if (prepared.error != UploadError.NONE) {
             cleanup(session);
             return FinishUploadResult.failed(prepared.error);
+        }
+        if (!beforeCommit.getAsBoolean()) {
+            cleanup(session);
+            return FinishUploadResult.failed(UploadError.INVALID_WRITER);
         }
         UploadError quotaError = quotaError(session.owner, prepared.byteCount);
         if (quotaError != UploadError.NONE) {

@@ -1,0 +1,21 @@
+{
+  "block.customjukeboxdiscs.disc_writer": "Disc Writer",
+  "container.customjukeboxdiscs.disc_writer": "Disc Writer",
+  "item.customjukeboxdiscs.blank_disc": "Blank Disc",
+  "item.customjukeboxdiscs.programmed_disc": "Programmed Disc",
+  "item.customjukeboxdiscs.programmed_disc.uploader": "Uploaded by %s",
+  "jukebox_song.customjukeboxdiscs.dynamic_track": "Custom track",
+  "screen.customjukeboxdiscs.disc_writer.folder": "Folder",
+  "screen.customjukeboxdiscs.disc_writer.no_files": "No MP3/OGG files",
+  "screen.customjukeboxdiscs.disc_writer.empty_title": "Enter a track title",
+  "screen.customjukeboxdiscs.disc_writer.scan_failed": "Could not scan upload folder",
+  "screen.customjukeboxdiscs.disc_writer.title": "Track title",
+  "screen.customjukeboxdiscs.disc_writer.upload": "Upload",
+  "upload.customjukeboxdiscs.busy": "Another upload is active",
+  "upload.customjukeboxdiscs.complete": "Disc programmed",
+  "upload.customjukeboxdiscs.failed": "Upload failed: %s",
+  "upload.customjukeboxdiscs.hashing": "Preparing file...",
+  "upload.customjukeboxdiscs.progress": "Uploading %s / %s bytes",
+  "upload.customjukeboxdiscs.read_failed": "Could not read the audio file"
+  ,"command.customjukeboxdiscs.access_updated": "Updated access for %s player(s)"
+}

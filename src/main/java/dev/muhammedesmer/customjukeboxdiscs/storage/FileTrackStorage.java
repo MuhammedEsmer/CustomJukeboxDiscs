@@ -60,6 +60,16 @@ public final class FileTrackStorage implements TrackStorage {
         Files.deleteIfExists(trackPath(sha256, AudioFormat.OGG));
     }
 
+    public void cleanupTemporaryFiles() throws IOException {
+        if (!Files.isDirectory(temporaryDirectory)) return;
+        try (var files = Files.list(temporaryDirectory)) {
+            for (Path path : files.filter(Files::isRegularFile)
+                    .filter(file -> file.getFileName().toString().endsWith(".part")).toList()) {
+                Files.deleteIfExists(path);
+            }
+        }
+    }
+
     private Path trackPath(String sha256, AudioFormat format) {
         requireHash(sha256);
         Objects.requireNonNull(format, "format");

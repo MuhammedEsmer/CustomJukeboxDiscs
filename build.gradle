@@ -127,8 +127,10 @@ dependencies {
 
     jarJar(implementation('com.mpatric:mp3agic:0.9.1'))
     jarJar(implementation('org.gagravarr:vorbis-java-core:0.8'))
+    jarJar(implementation('javazoom:jlayer:1.0.1'))
     additionalRuntimeClasspath 'com.mpatric:mp3agic:0.9.1'
     additionalRuntimeClasspath 'org.gagravarr:vorbis-java-core:0.8'
+    additionalRuntimeClasspath 'javazoom:jlayer:1.0.1'
     // Example optional mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
     // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"

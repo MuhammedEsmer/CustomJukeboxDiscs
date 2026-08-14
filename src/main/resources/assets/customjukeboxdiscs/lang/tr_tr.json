@@ -1,0 +1,21 @@
+{
+  "block.customjukeboxdiscs.disc_writer": "Disk Yazıcı",
+  "container.customjukeboxdiscs.disc_writer": "Disk Yazıcı",
+  "item.customjukeboxdiscs.blank_disc": "Boş Disk",
+  "item.customjukeboxdiscs.programmed_disc": "Programlanmış Disk",
+  "item.customjukeboxdiscs.programmed_disc.uploader": "Yükleyen: %s",
+  "jukebox_song.customjukeboxdiscs.dynamic_track": "Özel parça",
+  "screen.customjukeboxdiscs.disc_writer.folder": "Klasör",
+  "screen.customjukeboxdiscs.disc_writer.no_files": "MP3/OGG dosyası yok",
+  "screen.customjukeboxdiscs.disc_writer.empty_title": "Parça adı gir",
+  "screen.customjukeboxdiscs.disc_writer.scan_failed": "Yükleme klasörü okunamadı",
+  "screen.customjukeboxdiscs.disc_writer.title": "Parça adı",
+  "screen.customjukeboxdiscs.disc_writer.upload": "Yükle",
+  "upload.customjukeboxdiscs.busy": "Başka bir yükleme sürüyor",
+  "upload.customjukeboxdiscs.complete": "Disk programlandı",
+  "upload.customjukeboxdiscs.failed": "Yükleme başarısız: %s",
+  "upload.customjukeboxdiscs.hashing": "Dosya hazırlanıyor...",
+  "upload.customjukeboxdiscs.progress": "%s / %s bayt yükleniyor",
+  "upload.customjukeboxdiscs.read_failed": "Ses dosyası okunamadı"
+  ,"command.customjukeboxdiscs.access_updated": "%s oyuncunun erişimi güncellendi"
+}

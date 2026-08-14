@@ -29,7 +29,7 @@ public final class ServerConfig {
     private ServerConfig(ModConfigSpec.Builder builder) {
         builder.push("limits");
         maxSourceBytes = builder.defineInRange("maxSourceBytes", 10L * MIB, 1L, Integer.MAX_VALUE);
-        maxDurationMillis = builder.defineInRange("maxDurationMillis", 600_000L, 1L, 86_400_000L);
+        maxDurationMillis = builder.defineInRange("maxDurationMillis", 600_000L, 1L, 600_000L);
         maxTracksPerPlayer = builder.defineInRange("maxTracksPerPlayer", 20, 1, 10_000);
         maxBytesPerPlayer = builder.defineInRange("maxBytesPerPlayer", 100L * MIB, 1L, Long.MAX_VALUE);
         maxServerBytes = builder.defineInRange("maxServerBytes", 2L * 1024L * MIB, 1L, Long.MAX_VALUE);
@@ -75,6 +75,9 @@ public final class ServerConfig {
         public Limits {
             requirePositive(maxSourceBytes, "maxSourceBytes");
             requirePositive(maxDurationMillis, "maxDurationMillis");
+            if (maxDurationMillis > 600_000L) {
+                throw new IllegalArgumentException("maxDurationMillis cannot exceed 600000");
+            }
             requirePositive(maxTracksPerPlayer, "maxTracksPerPlayer");
             requirePositive(maxBytesPerPlayer, "maxBytesPerPlayer");
             requirePositive(maxServerBytes, "maxServerBytes");

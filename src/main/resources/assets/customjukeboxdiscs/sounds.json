@@ -1,0 +1,7 @@
+{
+  "dynamic_track": {
+    "sounds": [
+      { "name": "minecraft:intentionally_empty", "stream": true }
+    ]
+  }
+}
