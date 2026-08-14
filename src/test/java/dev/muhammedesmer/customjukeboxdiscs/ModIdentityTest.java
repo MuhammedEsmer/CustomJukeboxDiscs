@@ -12,7 +12,8 @@ final class ModIdentityTest {
     @Test
     void metadataTargetsTheApprovedPlatformAndIdentity() throws IOException {
         Properties properties = new Properties();
-        try (var reader = Files.newBufferedReader(Path.of("gradle.properties"))) {
+        Path projectDirectory = Path.of(System.getProperty("customjukeboxdiscs.projectDir"));
+        try (var reader = Files.newBufferedReader(projectDirectory.resolve("gradle.properties"))) {
             properties.load(reader);
         }
 
