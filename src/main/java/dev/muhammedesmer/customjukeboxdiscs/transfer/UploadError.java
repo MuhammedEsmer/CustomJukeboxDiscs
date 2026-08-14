@@ -1,0 +1,22 @@
+package dev.muhammedesmer.customjukeboxdiscs.transfer;
+
+public enum UploadError {
+    NONE,
+    PERMISSION_DENIED,
+    DENIED_PLAYER,
+    ACTIVE_SESSION_LIMIT,
+    SIZE_LIMIT,
+    UNSUPPORTED_FORMAT,
+    PLAYER_QUOTA,
+    SERVER_QUOTA,
+    CHUNK_TOO_LARGE,
+    WRONG_OFFSET,
+    RATE_LIMIT,
+    TIMEOUT,
+    HASH_MISMATCH,
+    MALFORMED_AUDIO,
+    DURATION_LIMIT,
+    INCOMPLETE_UPLOAD,
+    SESSION_NOT_FOUND,
+    STORAGE_FAILURE
+}

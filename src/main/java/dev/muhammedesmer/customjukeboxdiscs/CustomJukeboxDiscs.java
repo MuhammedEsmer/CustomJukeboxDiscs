@@ -3,6 +3,7 @@ package dev.muhammedesmer.customjukeboxdiscs;
 import dev.muhammedesmer.customjukeboxdiscs.content.ModDataComponents;
 import dev.muhammedesmer.customjukeboxdiscs.config.ClientConfig;
 import dev.muhammedesmer.customjukeboxdiscs.config.ServerConfig;
+import dev.muhammedesmer.customjukeboxdiscs.network.ModPayloads;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
@@ -14,6 +15,7 @@ public final class CustomJukeboxDiscs {
 
     public CustomJukeboxDiscs(IEventBus modBus, ModContainer modContainer) {
         ModDataComponents.REGISTRAR.register(modBus);
+        modBus.addListener(ModPayloads::register);
         modContainer.registerConfig(ModConfig.Type.SERVER, ServerConfig.SPEC);
         modContainer.registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC);
     }
