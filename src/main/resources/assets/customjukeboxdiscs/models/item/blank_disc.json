@@ -1,4 +1,6 @@
 {
   "parent": "minecraft:item/generated",
-  "textures": { "layer0": "minecraft:item/music_disc_13" }
+  "textures": {
+    "layer0": "customjukeboxdiscs:item/blank_disc"
+  }
 }

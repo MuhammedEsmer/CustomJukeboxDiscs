@@ -17,6 +17,11 @@ public final class ModDataComponents {
                     .networkSynchronized(TrackReference.STREAM_CODEC)
                     .cacheEncoding());
 
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> DISC_VARIANT =
+            REGISTRAR.registerComponentType("disc_variant", builder -> builder
+                    .persistent(com.mojang.serialization.Codec.INT)
+                    .networkSynchronized(net.minecraft.network.codec.ByteBufCodecs.VAR_INT));
+
     private ModDataComponents() {
     }
 }

@@ -5,21 +5,21 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.BlockPos;
+import dev.muhammedesmer.customjukeboxdiscs.network.payload.PlaybackAnchor;
 
 public final class DynamicAudioEngine {
-    private final Map<BlockPos, DynamicTrackSound> playing = new HashMap<>();
+    private final Map<PlaybackAnchor, DynamicTrackSound> playing = new HashMap<>();
 
-    public void play(BlockPos pos, TrackReference track, Path file, long elapsedMillis) {
-        stop(pos);
-        long remaining = Math.max(1, track.durationMillis() - elapsedMillis);
-        DynamicTrackSound sound = new DynamicTrackSound(pos.immutable(), file, track.format(), elapsedMillis, remaining);
-        playing.put(pos.immutable(), sound);
+    public void play(PlaybackAnchor anchor, TrackReference track, Path file, TrackTimeline timeline) {
+        stop(anchor);
+        if (timeline.finishedAt(System.nanoTime())) return;
+        DynamicTrackSound sound = new DynamicTrackSound(anchor, file, track.format(), timeline);
+        playing.put(anchor, sound);
         Minecraft.getInstance().getSoundManager().play(sound);
     }
 
-    public void stop(BlockPos pos) {
-        DynamicTrackSound sound = playing.remove(pos);
+    public void stop(PlaybackAnchor anchor) {
+        DynamicTrackSound sound = playing.remove(anchor);
         if (sound != null) Minecraft.getInstance().getSoundManager().stop(sound);
     }
 

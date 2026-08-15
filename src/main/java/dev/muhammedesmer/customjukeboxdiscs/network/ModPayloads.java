@@ -5,9 +5,11 @@ import dev.muhammedesmer.customjukeboxdiscs.network.payload.UploadBeginResponse;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.UploadChunk;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.UploadFinish;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.UploadResult;
+import dev.muhammedesmer.customjukeboxdiscs.network.payload.UrlUploadRequest;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.DownloadChunk;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.JukeboxPlay;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.JukeboxStop;
+import dev.muhammedesmer.customjukeboxdiscs.network.payload.PlaybackPreference;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.TrackBegin;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.TrackRequest;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.TrackUnavailable;
@@ -41,6 +43,10 @@ public final class ModPayloads {
         registrar.playToServer(UploadFinish.TYPE, UploadFinish.STREAM_CODEC,
                 (payload, context) -> serverHandler.handle(payload, context));
         registrar.playToServer(TrackRequest.TYPE, TrackRequest.STREAM_CODEC,
+                (payload, context) -> serverHandler.handle(payload, context));
+        registrar.playToServer(PlaybackPreference.TYPE, PlaybackPreference.STREAM_CODEC,
+                (payload, context) -> serverHandler.handle(payload, context));
+        registrar.playToServer(UrlUploadRequest.TYPE, UrlUploadRequest.STREAM_CODEC,
                 (payload, context) -> serverHandler.handle(payload, context));
         registrar.playToClient(UploadBeginResponse.TYPE, UploadBeginResponse.STREAM_CODEC,
                 (payload, context) -> clientHandler.handle(payload, context));
@@ -79,6 +85,15 @@ public final class ModPayloads {
             public void handle(TrackRequest payload, IPayloadContext context) {
                 context.disconnect(net.minecraft.network.chat.Component.literal("Custom Jukebox Discs is not ready"));
             }
+
+            @Override
+            public void handle(PlaybackPreference payload, IPayloadContext context) {
+            }
+
+            @Override
+            public void handle(UrlUploadRequest payload, IPayloadContext context) {
+                context.disconnect(net.minecraft.network.chat.Component.literal("Custom Jukebox Discs is not ready"));
+            }
         };
 
         void handle(UploadBeginRequest payload, IPayloadContext context);
@@ -88,6 +103,10 @@ public final class ModPayloads {
         void handle(UploadFinish payload, IPayloadContext context);
 
         void handle(TrackRequest payload, IPayloadContext context);
+
+        void handle(PlaybackPreference payload, IPayloadContext context);
+
+        void handle(UrlUploadRequest payload, IPayloadContext context);
     }
 
     public interface ClientHandler {

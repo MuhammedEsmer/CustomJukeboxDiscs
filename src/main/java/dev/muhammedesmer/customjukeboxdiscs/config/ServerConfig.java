@@ -19,6 +19,8 @@ public final class ServerConfig {
     private final ModConfigSpec.LongValue uploadTimeoutMillis;
     private final ModConfigSpec.BooleanValue mp3Enabled;
     private final ModConfigSpec.BooleanValue oggEnabled;
+    private final ModConfigSpec.BooleanValue urlUploadsEnabled;
+    private final ModConfigSpec.ConfigValue<java.util.List<? extends String>> urlAllowedHosts;
 
     static {
         var configured = new ModConfigSpec.Builder().configure(ServerConfig::new);
@@ -43,6 +45,27 @@ public final class ServerConfig {
         mp3Enabled = builder.define("mp3Enabled", true);
         oggEnabled = builder.define("oggEnabled", true);
         builder.pop();
+
+        builder.push("urlUploads");
+        urlUploadsEnabled = builder
+                .comment("Allow writing a disc from a direct https link to an .mp3 or .ogg file.")
+                .define("enabled", false);
+        urlAllowedHosts = builder
+                .comment("Hosts the server may download from. Subdomains of a listed host are allowed.")
+                .defineListAllowEmpty("allowedHosts", java.util.List.of(
+                                "archive.org", "ia800000.us.archive.org", "files.catbox.moe",
+                                "freemusicarchive.org", "cdn.discordapp.com", "media.discordapp.net",
+                                "github.io", "githubusercontent.com"),
+                        entry -> entry instanceof String host && !host.isBlank());
+        builder.pop();
+    }
+
+    public boolean urlUploadsEnabled() {
+        return urlUploadsEnabled.get();
+    }
+
+    public java.util.List<String> urlAllowedHosts() {
+        return urlAllowedHosts.get().stream().map(String::valueOf).toList();
     }
 
     public Limits snapshot() {

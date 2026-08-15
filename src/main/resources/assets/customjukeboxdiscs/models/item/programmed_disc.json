@@ -1,4 +1,74 @@
 {
   "parent": "minecraft:item/generated",
-  "textures": { "layer0": "minecraft:item/music_disc_wait" }
+  "textures": {
+    "layer0": "customjukeboxdiscs:item/programmed_disc_0"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "customjukeboxdiscs:variant": 1
+      },
+      "model": "customjukeboxdiscs:item/programmed_disc_1"
+    },
+    {
+      "predicate": {
+        "customjukeboxdiscs:variant": 2
+      },
+      "model": "customjukeboxdiscs:item/programmed_disc_2"
+    },
+    {
+      "predicate": {
+        "customjukeboxdiscs:variant": 3
+      },
+      "model": "customjukeboxdiscs:item/programmed_disc_3"
+    },
+    {
+      "predicate": {
+        "customjukeboxdiscs:variant": 4
+      },
+      "model": "customjukeboxdiscs:item/programmed_disc_4"
+    },
+    {
+      "predicate": {
+        "customjukeboxdiscs:variant": 5
+      },
+      "model": "customjukeboxdiscs:item/programmed_disc_5"
+    },
+    {
+      "predicate": {
+        "customjukeboxdiscs:variant": 6
+      },
+      "model": "customjukeboxdiscs:item/programmed_disc_6"
+    },
+    {
+      "predicate": {
+        "customjukeboxdiscs:variant": 7
+      },
+      "model": "customjukeboxdiscs:item/programmed_disc_7"
+    },
+    {
+      "predicate": {
+        "customjukeboxdiscs:variant": 8
+      },
+      "model": "customjukeboxdiscs:item/programmed_disc_8"
+    },
+    {
+      "predicate": {
+        "customjukeboxdiscs:variant": 9
+      },
+      "model": "customjukeboxdiscs:item/programmed_disc_9"
+    },
+    {
+      "predicate": {
+        "customjukeboxdiscs:variant": 10
+      },
+      "model": "customjukeboxdiscs:item/programmed_disc_10"
+    },
+    {
+      "predicate": {
+        "customjukeboxdiscs:variant": 11
+      },
+      "model": "customjukeboxdiscs:item/programmed_disc_11"
+    }
+  ]
 }

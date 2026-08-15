@@ -3,6 +3,7 @@ package dev.muhammedesmer.customjukeboxdiscs.content.writer;
 import dev.muhammedesmer.customjukeboxdiscs.content.ModBlockEntities;
 import dev.muhammedesmer.customjukeboxdiscs.content.ModDataComponents;
 import dev.muhammedesmer.customjukeboxdiscs.content.ModItems;
+import dev.muhammedesmer.customjukeboxdiscs.content.disc.DiscVariant;
 import dev.muhammedesmer.customjukeboxdiscs.content.disc.TrackReference;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -39,6 +40,8 @@ public final class DiscWriterBlockEntity extends BlockEntity implements Containe
         }
         ItemStack output = new ItemStack(ModItems.PROGRAMMED_DISC.get());
         output.set(ModDataComponents.TRACK_REFERENCE, track);
+        output.set(ModDataComponents.DISC_VARIANT, DiscVariant.random(
+                level == null ? net.minecraft.util.RandomSource.create() : level.getRandom()));
         items.set(0, output);
         setChanged();
         return true;

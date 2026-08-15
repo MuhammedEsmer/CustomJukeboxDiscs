@@ -60,6 +60,21 @@ public final class FileTrackStorage implements TrackStorage {
         Files.deleteIfExists(trackPath(sha256, AudioFormat.OGG));
     }
 
+    /** {@return the hashes of every validated audio file currently on disk} */
+    public java.util.List<String> listStoredHashes() throws IOException {
+        if (!Files.isDirectory(tracksDirectory)) {
+            return java.util.List.of();
+        }
+        try (var files = Files.walk(tracksDirectory)) {
+            return files.filter(Files::isRegularFile)
+                    .map(path -> path.getFileName().toString())
+                    .map(name -> name.substring(0, Math.max(0, name.lastIndexOf('.'))))
+                    .filter(name -> SHA_256.matcher(name).matches())
+                    .sorted()
+                    .toList();
+        }
+    }
+
     public void cleanupTemporaryFiles() throws IOException {
         if (!Files.isDirectory(temporaryDirectory)) return;
         try (var files = Files.list(temporaryDirectory)) {

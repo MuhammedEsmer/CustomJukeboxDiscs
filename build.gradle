@@ -28,11 +28,43 @@ sourceSets.main.resources {
 }
 
 repositories {
-    // Add here additional repositories if required by some of the dependencies below.
+    // Sophisticated Core is published on CurseForge only; it is a compile-only, optional integration.
+    maven {
+        name = 'CurseMaven'
+        url = 'https://cursemaven.com'
+        content { includeGroup 'curse.maven' }
+    }
 }
 
 base {
-    archivesName = mod_id
+    // Minecraft version in the file name so several game versions can live side by side on CurseForge.
+    archivesName = "${mod_id}-${minecraft_version}"
+}
+
+// Every build lands in releases/, which sits outside build/ so `clean` can never remove it.
+tasks.register('archiveRelease', Copy) {
+    dependsOn tasks.named('jar')
+    from tasks.named('jar')
+    into layout.projectDirectory.dir('releases')
+    // releases/ also holds older jars, so Gradle cannot judge this task from its destination.
+    outputs.upToDateWhen { false }
+}
+
+tasks.named('build') {
+    finalizedBy 'archiveRelease'
+}
+
+// GameTests live outside the published jar but are loaded as part of the mod during development runs.
+sourceSets {
+    gametest {
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+}
+
+configurations {
+    gametestImplementation.extendsFrom implementation
+    gametestRuntimeOnly.extendsFrom runtimeOnly
 }
 
 // Mojang ships Java 21 to end users in 1.21.1, so mods should target Java 21.
@@ -103,8 +135,11 @@ neoForge {
         // multi mod projects should define one per mod
         "${mod_id}" {
             sourceSet(sourceSets.main)
+            sourceSet(sourceSets.gametest)
         }
     }
+
+    addModdingDependenciesTo sourceSets.gametest
 
     unitTest {
         enable()
@@ -124,6 +159,8 @@ dependencies {
     testImplementation platform('org.junit:junit-bom:5.11.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    compileOnly "curse.maven:sophisticated-core-${sophisticated_core_project}:${sophisticated_core_file}"
 
     jarJar(implementation('com.mpatric:mp3agic:0.9.1'))
     jarJar(implementation('org.gagravarr:vorbis-java-core:0.8'))

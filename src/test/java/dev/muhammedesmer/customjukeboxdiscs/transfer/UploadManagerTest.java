@@ -216,9 +216,43 @@ final class UploadManagerTest {
         assertEquals(UploadError.STORAGE_FAILURE, begin(100, "a".repeat(64), 0).error());
     }
 
+    @Test
+    void sanitizesClientSuppliedTitleBeforeStoringTheTrack() throws Exception {
+        byte[] audio = fixtureBytes("one_second.mp3");
+        String hash = sha256(audio);
+        BeginUploadResult begin = beginWithTitle(audio.length, hash, "§kMy\n\tSong");
+        appendAll(begin.sessionId(), audio);
+
+        FinishUploadResult result = manager.finish(PLAYER, begin.sessionId(), hash).join();
+
+        assertEquals(UploadError.NONE, result.error());
+        assertEquals("My Song", result.track().title());
+    }
+
+    @Test
+    void reloadAppliesNewLimitsToLaterUploads() {
+        assertTrue(begin(5_000, "a".repeat(64), 0).accepted());
+        manager.cancelAll(PLAYER);
+
+        manager.reload(ServerConfig.Limits.defaults()
+                .withChunkBytes(500)
+                .withMaxSourceBytes(1_000));
+
+        assertEquals(UploadError.SIZE_LIMIT, begin(5_000, "b".repeat(64), 0).error());
+    }
+
+    @Test
+    void rejectsTitleThatSanitizesToNothing() {
+        assertEquals(UploadError.INVALID_TITLE, beginWithTitle(100, "a".repeat(64), "§a§b").error());
+    }
+
     private BeginUploadResult begin(long bytes, String hash, int permissionLevel) {
         return manager.begin(PLAYER, permissionLevel,
                 new BeginUpload(hash, bytes, AudioFormat.MP3, "Track", "Player"));
+    }
+
+    private BeginUploadResult beginWithTitle(long bytes, String hash, String title) {
+        return manager.begin(PLAYER, 0, new BeginUpload(hash, bytes, AudioFormat.MP3, title, "Player"));
     }
 
     private UploadManager manager(ServerConfig.Limits limits, TrackStorage storage) {

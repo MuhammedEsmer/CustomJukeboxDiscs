@@ -7,6 +7,7 @@ import dev.muhammedesmer.customjukeboxdiscs.network.payload.UploadBeginResponse;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.UploadChunk;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.UploadFinish;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.UploadResult;
+import dev.muhammedesmer.customjukeboxdiscs.network.payload.UrlUploadRequest;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.DownloadChunk;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.JukeboxPlay;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.JukeboxStop;
@@ -25,6 +26,7 @@ import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.Consumer;
+import java.util.function.DoubleConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -39,7 +41,19 @@ public final class ClientUploadManager implements ModPayloads.ClientHandler {
     private ClientUploadManager() {
     }
 
-    public void begin(Path file, String title, long inputFingerprint, Consumer<Component> status) {
+    /** Starts a link based write; the server does the downloading. */
+    public void beginFromUrl(String url, String title, long inputFingerprint, Consumer<Component> status) {
+        if (pending != null) {
+            status.accept(Component.translatable("upload.customjukeboxdiscs.busy"));
+            return;
+        }
+        pending = new Pending(null, "", 0, status, progress -> { });
+        status.accept(Component.translatable("upload.customjukeboxdiscs.fetching"));
+        PacketDistributor.sendToServer(new UrlUploadRequest(url, title, inputFingerprint));
+    }
+
+    public void begin(
+            Path file, String title, long inputFingerprint, Consumer<Component> status, DoubleConsumer progress) {
         if (pending != null) {
             status.accept(Component.translatable("upload.customjukeboxdiscs.busy"));
             return;
@@ -49,7 +63,7 @@ public final class ClientUploadManager implements ModPayloads.ClientHandler {
             try {
                 long size = Files.size(file);
                 String hash = sha256(file);
-                Pending upload = new Pending(file, hash, size, status);
+                Pending upload = new Pending(file, hash, size, status, progress);
                 pending = upload;
                 PacketDistributor.sendToServer(new UploadBeginRequest(
                         hash, size, format(file), title, inputFingerprint));
@@ -65,7 +79,8 @@ public final class ClientUploadManager implements ModPayloads.ClientHandler {
         Pending current = pending;
         if (current == null) return;
         if (response.status() == UploadBeginResponse.Status.REJECTED) {
-            finishStatus(current, Component.translatable("upload.customjukeboxdiscs.failed", response.error().name()));
+            finishStatus(current, Component.translatable(
+                    "upload.customjukeboxdiscs.failed", Component.translatable(response.error().translationKey())));
         } else if (response.status() == UploadBeginResponse.Status.ALREADY_PRESENT) {
             finishStatus(current, Component.translatable("upload.customjukeboxdiscs.complete"));
         } else {
@@ -84,8 +99,11 @@ public final class ClientUploadManager implements ModPayloads.ClientHandler {
                         response.sessionId(), offset, Arrays.copyOf(buffer, count)));
                 offset += count;
                 long sent = offset;
-                Minecraft.getInstance().execute(() -> current.status.accept(
-                        Component.translatable("upload.customjukeboxdiscs.progress", sent, current.size)));
+                Minecraft.getInstance().execute(() -> {
+                    current.status.accept(Component.translatable(
+                            "upload.customjukeboxdiscs.progress", sent * 100L / Math.max(1L, current.size)));
+                    current.progress.accept((double) sent / current.size);
+                });
                 LockSupport.parkNanos(Math.max(1L, count * 1_000_000_000L / SAFE_BYTES_PER_SECOND));
             }
             PacketDistributor.sendToServer(new UploadFinish(response.sessionId(), current.hash));
@@ -100,7 +118,8 @@ public final class ClientUploadManager implements ModPayloads.ClientHandler {
         if (current != null) {
             finishStatus(current, result.error() == UploadError.NONE
                     ? Component.translatable("upload.customjukeboxdiscs.complete")
-                    : Component.translatable("upload.customjukeboxdiscs.failed", result.error().name()));
+                    : Component.translatable("upload.customjukeboxdiscs.failed",
+                            Component.translatable(result.error().translationKey())));
         }
     }
 
@@ -112,7 +131,10 @@ public final class ClientUploadManager implements ModPayloads.ClientHandler {
 
     private void finishStatus(Pending current, Component message) {
         pending = null;
-        Minecraft.getInstance().execute(() -> current.status.accept(message));
+        Minecraft.getInstance().execute(() -> {
+            current.status.accept(message);
+            current.progress.accept(0.0);
+        });
     }
 
     private static String sha256(Path file) throws IOException {
@@ -134,6 +156,7 @@ public final class ClientUploadManager implements ModPayloads.ClientHandler {
                 ? AudioFormat.OGG : AudioFormat.MP3;
     }
 
-    private record Pending(Path file, String hash, long size, Consumer<Component> status) {
+    private record Pending(
+            Path file, String hash, long size, Consumer<Component> status, DoubleConsumer progress) {
     }
 }

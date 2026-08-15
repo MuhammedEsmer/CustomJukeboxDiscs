@@ -17,6 +17,10 @@ license="${mod_license}"
 [[mixins]]
 config="customjukeboxdiscs.mixins.json"
 
+# Applied only when Sophisticated Core is installed; the config is marked as not required.
+[[mixins]]
+config="customjukeboxdiscs.sophisticatedcore.mixins.json"
+
 # A URL to refer people to when problems occur with this mod
 issueTrackerURL="https://github.com/MuhammedEsmer/CustomJukeboxDiscs/issues"
 

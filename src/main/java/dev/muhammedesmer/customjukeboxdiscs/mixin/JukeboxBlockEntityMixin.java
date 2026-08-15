@@ -22,7 +22,7 @@ abstract class JukeboxBlockEntityMixin {
         if (!(self.getLevel() instanceof ServerLevel level)) return;
         TrackReference track = stack.get(ModDataComponents.TRACK_REFERENCE);
         if (track == null) ServerRuntime.stop(level, self.getBlockPos());
-        else ServerRuntime.play(level, self.getBlockPos(), track, 0);
+        else ServerRuntime.play(level, self.getBlockPos(), track, 0L);
     }
 
     @Inject(method = "tick", at = @At("HEAD"))

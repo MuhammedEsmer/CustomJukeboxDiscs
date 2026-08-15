@@ -10,6 +10,7 @@ public final class ClientConfig {
 
     private final ModConfigSpec.LongValue maxCacheBytes;
     private final ModConfigSpec.IntValue maxUploadScanFiles;
+    private final ModConfigSpec.BooleanValue playbackEnabled;
 
     static {
         var configured = new ModConfigSpec.Builder().configure(ClientConfig::new);
@@ -20,10 +21,22 @@ public final class ClientConfig {
     private ClientConfig(ModConfigSpec.Builder builder) {
         maxCacheBytes = builder.defineInRange("maxCacheBytes", 512L * MIB, 1L, Long.MAX_VALUE);
         maxUploadScanFiles = builder.defineInRange("maxUploadScanFiles", 1_000, 1, 100_000);
+        playbackEnabled = builder
+                .comment("Play custom discs. Turning this off also stops the client downloading any track.")
+                .define("playbackEnabled", true);
     }
 
     public Limits snapshot() {
         return new Limits(maxCacheBytes.get(), maxUploadScanFiles.get());
+    }
+
+    public boolean playbackEnabled() {
+        return playbackEnabled.get();
+    }
+
+    public void setPlaybackEnabled(boolean enabled) {
+        playbackEnabled.set(enabled);
+        playbackEnabled.save();
     }
 
     public record Limits(long maxCacheBytes, int maxUploadScanFiles) {

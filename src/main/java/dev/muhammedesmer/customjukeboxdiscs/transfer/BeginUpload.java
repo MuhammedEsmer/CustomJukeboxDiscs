@@ -24,6 +24,10 @@ public record BeginUpload(
         requireCodePoints(uploaderName, 16, "uploaderName");
     }
 
+    public BeginUpload withTitle(String value) {
+        return new BeginUpload(clientHash, declaredBytes, formatHint, value, uploaderName);
+    }
+
     private static void requireCodePoints(String value, int maximum, String name) {
         if (value == null) {
             throw new NullPointerException(name);

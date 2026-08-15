@@ -1,0 +1,7 @@
+{
+  "required": false,
+  "package": "dev.muhammedesmer.customjukeboxdiscs.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": ["StorageSoundStopMixin"],
+  "injectors": { "defaultRequire": 0 }
+}
