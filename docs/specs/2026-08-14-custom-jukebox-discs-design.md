@@ -85,7 +85,7 @@ Default server values:
 - Maximum bytes owned by one uploader: 100 MiB.
 - Maximum total server track storage: 2 GiB.
 - Maximum simultaneous upload sessions per player: 1.
-- Network chunk payload: 32 KiB.
+- Network chunk payload: 31 KiB, because a serverbound custom payload may not exceed 32,767 bytes.
 - Upload rate: 512 KiB/s per player.
 - Upload inactivity timeout: 30 seconds.
 - Supported formats: MP3 and OGG Vorbis, independently switchable.
@@ -145,7 +145,7 @@ Upload payloads:
 
 - `UploadBeginRequest`: local hash, declared bytes, format hint, title.
 - `UploadBeginResponse`: denied, already present, or session ID with negotiated chunk size.
-- `UploadChunk`: session ID, exact offset, at most 32 KiB.
+- `UploadChunk`: session ID, exact offset, at most 31 KiB.
 - `UploadFinish`: session ID and client hash.
 - `UploadResult`: success or stable error code.
 
