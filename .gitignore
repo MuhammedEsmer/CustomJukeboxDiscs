@@ -36,3 +36,9 @@ run/
 **/src/generated/**/.cache/
 repo/
 !**/src/**/repo/
+
+# Archived release jars for upload
+releases/
+
+# Local code index
+.codegraph/
