@@ -15,6 +15,23 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 final class AccessServiceTest {
+    @Test
+    void exposesTheCurrentModeAndPerPlayerEntries() {
+        AccessPolicyData policy = new AccessPolicyData();
+        DefaultAccessService service = new DefaultAccessService(policy);
+        UUID allowed = UUID.fromString("12345678-1234-5678-9234-567812345678");
+        UUID denied = UUID.fromString("87654321-4321-6789-9234-567812345678");
+        service.setMode(AccessMode.ALLOWLIST);
+        service.allow(allowed);
+        service.deny(denied);
+
+        assertEquals(AccessMode.ALLOWLIST, service.mode());
+        assertTrue(service.isAllowed(allowed));
+        assertFalse(service.isDenied(allowed));
+        assertTrue(service.isDenied(denied));
+        assertFalse(service.isAllowed(denied));
+    }
+
     private static final UUID PLAYER = UUID.fromString("12345678-1234-5678-9234-567812345678");
 
     private AccessPolicyData policy;

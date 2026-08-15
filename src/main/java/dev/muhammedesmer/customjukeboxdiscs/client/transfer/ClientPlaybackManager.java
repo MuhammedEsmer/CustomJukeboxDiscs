@@ -1,12 +1,14 @@
 package dev.muhammedesmer.customjukeboxdiscs.client.transfer;
 
 import dev.muhammedesmer.customjukeboxdiscs.client.audio.DynamicAudioEngine;
+import dev.muhammedesmer.customjukeboxdiscs.client.audio.TrackTimeline;
 import dev.muhammedesmer.customjukeboxdiscs.client.cache.ClientTrackCache;
 import dev.muhammedesmer.customjukeboxdiscs.content.disc.TrackReference;
 import dev.muhammedesmer.customjukeboxdiscs.config.ClientConfig;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.DownloadChunk;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.JukeboxPlay;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.JukeboxStop;
+import dev.muhammedesmer.customjukeboxdiscs.network.payload.PlaybackAnchor;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.TrackBegin;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.TrackRequest;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.TrackUnavailable;
@@ -21,7 +23,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.BlockPos;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 public final class ClientPlaybackManager {
@@ -42,9 +43,13 @@ public final class ClientPlaybackManager {
     }
 
     public void play(JukeboxPlay payload) {
+        if (!dev.muhammedesmer.customjukeboxdiscs.client.ClientPlaybackPreference.enabled()) {
+            return;
+        }
         ClientTrackCache current = cache();
         List<PendingPlay> waiting = pending.computeIfAbsent(payload.track().sha256(), ignored -> new ArrayList<>());
-        waiting.add(new PendingPlay(payload.pos(), payload.track(), payload.elapsedMillis()));
+        waiting.add(new PendingPlay(payload.anchor(), payload.track(), TrackTimeline.startingFrom(
+                System.nanoTime(), payload.elapsedMillis(), payload.track().durationMillis())));
         if (waiting.size() > 1) return;
         CompletableFuture.supplyAsync(() -> current.find(payload.track().sha256(), payload.track().format()), io)
                 .thenAccept(found -> Minecraft.getInstance().execute(() -> found.ifPresentOrElse(
@@ -53,8 +58,8 @@ public final class ClientPlaybackManager {
     }
 
     public void stop(JukeboxStop payload) {
-        audio.stop(payload.pos());
-        pending.values().forEach(list -> list.removeIf(play -> play.pos.equals(payload.pos())));
+        audio.stop(payload.anchor());
+        pending.values().forEach(list -> list.removeIf(play -> play.anchor.equals(payload.anchor())));
     }
 
     public void begin(TrackBegin payload) {
@@ -105,7 +110,7 @@ public final class ClientPlaybackManager {
     private void complete(String hash, Path path) {
         List<PendingPlay> waiting = pending.remove(hash);
         retries.remove(hash);
-        if (waiting != null) waiting.forEach(play -> audio.play(play.pos, play.track, path, play.elapsedMillis));
+        if (waiting != null) waiting.forEach(play -> audio.play(play.anchor, play.track, path, play.timeline));
     }
 
     private ClientTrackCache cache() {
@@ -120,6 +125,6 @@ public final class ClientPlaybackManager {
         return cache;
     }
 
-    private record PendingPlay(BlockPos pos, TrackReference track, long elapsedMillis) {
+    private record PendingPlay(PlaybackAnchor anchor, TrackReference track, TrackTimeline timeline) {
     }
 }

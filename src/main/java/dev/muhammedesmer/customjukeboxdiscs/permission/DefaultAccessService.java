@@ -33,6 +33,21 @@ public final class DefaultAccessService implements AccessService {
     }
 
     @Override
+    public AccessMode mode() {
+        return policy.mode();
+    }
+
+    @Override
+    public boolean isAllowed(UUID playerId) {
+        return policy.allowedPlayers().contains(playerId);
+    }
+
+    @Override
+    public boolean isDenied(UUID playerId) {
+        return policy.deniedPlayers().contains(playerId);
+    }
+
+    @Override
     public void setMode(AccessMode mode) {
         policy.setMode(Objects.requireNonNull(mode, "mode"));
     }

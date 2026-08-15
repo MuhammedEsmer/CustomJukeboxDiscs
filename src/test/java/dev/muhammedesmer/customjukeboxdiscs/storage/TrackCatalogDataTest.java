@@ -44,9 +44,51 @@ final class TrackCatalogDataTest {
         assertEquals(1, decoded.tracks().size());
     }
 
+    @Test
+    void pagesTracksOldestFirst() {
+        TrackCatalogData catalog = new TrackCatalogData();
+        catalog.add(metadata("c".repeat(64), 100, "2026-08-14T00:00:03Z"));
+        catalog.add(metadata("a".repeat(64), 100, "2026-08-14T00:00:01Z"));
+        catalog.add(metadata("b".repeat(64), 100, "2026-08-14T00:00:02Z"));
+
+        TrackCatalogData.CatalogPage page = catalog.page(1, 2);
+
+        assertEquals(2, page.pageCount());
+        assertEquals(3, page.totalTracks());
+        assertEquals(java.util.List.of("a".repeat(64), "b".repeat(64)),
+                page.entries().stream().map(entry -> entry.reference().sha256()).toList());
+    }
+
+    @Test
+    void returnsTheRemainderOnTheLastPage() {
+        TrackCatalogData catalog = new TrackCatalogData();
+        catalog.add(metadata("a".repeat(64), 100, "2026-08-14T00:00:01Z"));
+        catalog.add(metadata("b".repeat(64), 100, "2026-08-14T00:00:02Z"));
+        catalog.add(metadata("c".repeat(64), 100, "2026-08-14T00:00:03Z"));
+
+        assertEquals(1, catalog.page(2, 2).entries().size());
+    }
+
+    @Test
+    void reportsAnEmptyPageBeyondTheLastOne() {
+        TrackCatalogData catalog = new TrackCatalogData();
+        catalog.add(metadata("a".repeat(64), 100, "2026-08-14T00:00:01Z"));
+
+        assertTrue(catalog.page(5, 2).entries().isEmpty());
+    }
+
+    @Test
+    void reportsOnePageForAnEmptyCatalog() {
+        assertEquals(1, new TrackCatalogData().page(1, 10).pageCount());
+    }
+
     private static TrackMetadata metadata(String hash, long bytes) {
+        return metadata(hash, bytes, "2026-08-14T00:00:00Z");
+    }
+
+    private static TrackMetadata metadata(String hash, long bytes, String createdAt) {
         TrackReference reference = new TrackReference(
                 hash, "Track", OWNER, "Player", 1_000, AudioFormat.OGG);
-        return new TrackMetadata(reference, bytes, Instant.parse("2026-08-14T00:00:00Z"));
+        return new TrackMetadata(reference, bytes, Instant.parse(createdAt));
     }
 }

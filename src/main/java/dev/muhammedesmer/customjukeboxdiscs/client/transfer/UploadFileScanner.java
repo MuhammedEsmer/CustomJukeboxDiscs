@@ -1,5 +1,6 @@
 package dev.muhammedesmer.customjukeboxdiscs.client.transfer;
 
+import dev.muhammedesmer.customjukeboxdiscs.content.disc.TitleSanitizer;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -41,9 +42,7 @@ public final class UploadFileScanner {
     }
 
     public static String sanitizeTitle(String title) {
-        String compact = title.strip().replaceAll("\\s+", " ");
-        int end = compact.offsetByCodePoints(0, Math.min(64, compact.codePointCount(0, compact.length())));
-        return compact.substring(0, end);
+        return TitleSanitizer.sanitize(title);
     }
 
     private static boolean isSupported(Path path) {

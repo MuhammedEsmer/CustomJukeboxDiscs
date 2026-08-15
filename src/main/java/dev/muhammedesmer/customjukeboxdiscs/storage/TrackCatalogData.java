@@ -1,7 +1,9 @@
 package dev.muhammedesmer.customjukeboxdiscs.storage;
 
 import com.mojang.serialization.Codec;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -54,6 +56,23 @@ public final class TrackCatalogData extends SavedData {
 
     public Map<String, TrackMetadata> tracks() {
         return Map.copyOf(tracks);
+    }
+
+    public CatalogPage page(int page, int pageSize) {
+        if (page < 1 || pageSize < 1) {
+            throw new IllegalArgumentException("page and pageSize must be positive");
+        }
+        List<TrackMetadata> ordered = tracks.values().stream()
+                .sorted(Comparator.comparing(TrackMetadata::createdAt)
+                        .thenComparing(metadata -> metadata.reference().sha256()))
+                .toList();
+        int pageCount = Math.max(1, (ordered.size() + pageSize - 1) / pageSize);
+        int from = Math.min((page - 1) * pageSize, ordered.size());
+        int to = Math.min(from + pageSize, ordered.size());
+        return new CatalogPage(page, pageCount, ordered.size(), ordered.subList(from, to));
+    }
+
+    public record CatalogPage(int page, int pageCount, int totalTracks, List<TrackMetadata> entries) {
     }
 
     public long trackCount(UUID owner) {

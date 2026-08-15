@@ -1,6 +1,7 @@
 package dev.muhammedesmer.customjukeboxdiscs.content;
 
 import dev.muhammedesmer.customjukeboxdiscs.CustomJukeboxDiscs;
+import dev.muhammedesmer.customjukeboxdiscs.content.rack.DiscRackBlockEntity;
 import dev.muhammedesmer.customjukeboxdiscs.content.writer.DiscWriterBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -13,6 +14,9 @@ public final class ModBlockEntities {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<DiscWriterBlockEntity>> DISC_WRITER =
             REGISTRAR.register("disc_writer", () -> BlockEntityType.Builder.of(
                     DiscWriterBlockEntity::new, ModBlocks.DISC_WRITER.get()).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<DiscRackBlockEntity>> DISC_RACK =
+            REGISTRAR.register("disc_rack", () -> BlockEntityType.Builder.of(
+                    DiscRackBlockEntity::new, ModBlocks.DISC_RACK.get()).build(null));
 
     private ModBlockEntities() {
     }

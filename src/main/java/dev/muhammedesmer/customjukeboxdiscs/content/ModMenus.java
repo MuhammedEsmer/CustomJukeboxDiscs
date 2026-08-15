@@ -1,6 +1,7 @@
 package dev.muhammedesmer.customjukeboxdiscs.content;
 
 import dev.muhammedesmer.customjukeboxdiscs.CustomJukeboxDiscs;
+import dev.muhammedesmer.customjukeboxdiscs.content.rack.DiscRackMenu;
 import dev.muhammedesmer.customjukeboxdiscs.content.writer.DiscWriterMenu;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.MenuType;
@@ -13,6 +14,8 @@ public final class ModMenus {
             DeferredRegister.create(Registries.MENU, CustomJukeboxDiscs.MOD_ID);
     public static final DeferredHolder<MenuType<?>, MenuType<DiscWriterMenu>> DISC_WRITER =
             REGISTRAR.register("disc_writer", () -> IMenuTypeExtension.create(DiscWriterMenu::new));
+    public static final DeferredHolder<MenuType<?>, MenuType<DiscRackMenu>> DISC_RACK =
+            REGISTRAR.register("disc_rack", () -> IMenuTypeExtension.create(DiscRackMenu::new));
 
     private ModMenus() {
     }

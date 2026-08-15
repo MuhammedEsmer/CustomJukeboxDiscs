@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "customjukeboxdiscs:item/programmed_disc_8"
+  }
+}

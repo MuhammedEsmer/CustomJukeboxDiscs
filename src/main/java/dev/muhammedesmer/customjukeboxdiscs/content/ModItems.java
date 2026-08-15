@@ -26,6 +26,7 @@ public final class ModItems {
                             Registries.JUKEBOX_SONG,
                             ResourceLocation.fromNamespaceAndPath(CustomJukeboxDiscs.MOD_ID, "dynamic_track"))), false)));
     public static final DeferredItem<BlockItem> DISC_WRITER = REGISTRAR.registerSimpleBlockItem(ModBlocks.DISC_WRITER);
+    public static final DeferredItem<BlockItem> DISC_RACK = REGISTRAR.registerSimpleBlockItem(ModBlocks.DISC_RACK);
 
     private ModItems() {
     }

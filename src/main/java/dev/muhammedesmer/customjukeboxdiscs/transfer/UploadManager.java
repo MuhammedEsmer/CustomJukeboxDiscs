@@ -2,6 +2,7 @@ package dev.muhammedesmer.customjukeboxdiscs.transfer;
 
 import dev.muhammedesmer.customjukeboxdiscs.config.ServerConfig;
 import dev.muhammedesmer.customjukeboxdiscs.content.disc.AudioFormat;
+import dev.muhammedesmer.customjukeboxdiscs.content.disc.TitleSanitizer;
 import dev.muhammedesmer.customjukeboxdiscs.content.disc.TrackReference;
 import dev.muhammedesmer.customjukeboxdiscs.permission.AccessDecision;
 import dev.muhammedesmer.customjukeboxdiscs.permission.AccessService;
@@ -37,7 +38,7 @@ public final class UploadManager {
     private final TrackStorage storage;
     private final TrackCatalogData catalog;
     private final AudioInspector inspector;
-    private final ServerConfig.Limits limits;
+    private volatile ServerConfig.Limits limits;
     private final LongSupplier nanoTime;
     private final Executor ioExecutor;
     private final Executor serverExecutor;
@@ -62,6 +63,11 @@ public final class UploadManager {
         this.serverExecutor = serverExecutor;
     }
 
+    /** Applies edited configuration values to every upload started after this call. */
+    public void reload(ServerConfig.Limits updated) {
+        limits = java.util.Objects.requireNonNull(updated, "limits");
+    }
+
     public synchronized BeginUploadResult begin(UUID playerId, int permissionLevel, BeginUpload request) {
         AccessDecision access = accessService.mayUpload(AccessSubject.player(playerId, permissionLevel));
         if (!access.allowed()) {
@@ -75,6 +81,11 @@ public final class UploadManager {
         if (!formatEnabled(request.formatHint())) {
             return BeginUploadResult.failed(UploadError.UNSUPPORTED_FORMAT);
         }
+        String title = TitleSanitizer.sanitize(request.title());
+        if (title.isEmpty()) {
+            return BeginUploadResult.failed(UploadError.INVALID_TITLE);
+        }
+        request = request.withTitle(title);
 
         Optional<TrackMetadata> existing = catalog.find(request.clientHash());
         if (existing.isPresent()) {
@@ -176,10 +187,15 @@ public final class UploadManager {
             return CompletableFuture.completedFuture(FinishUploadResult.failed(UploadError.HASH_MISMATCH));
         }
 
-        return CompletableFuture.supplyAsync(() -> inspect(session), ioExecutor)
-                .thenApplyAsync(prepared -> finalizeUpload(session, prepared, beforeCommit), serverExecutor)
+        Path temporary = session.temporaryPath;
+        BeginUpload request = session.request;
+        return CompletableFuture.supplyAsync(
+                        () -> inspect(temporary, request.title(), playerId, request.uploaderName(),
+                                request.clientHash()),
+                        ioExecutor)
+                .thenApplyAsync(prepared -> finalizeUpload(temporary, playerId, prepared, beforeCommit), serverExecutor)
                 .exceptionally(exception -> {
-                    cleanup(session);
+                    deleteQuietly(temporary);
                     return FinishUploadResult.failed(UploadError.STORAGE_FAILURE);
                 });
     }
@@ -205,23 +221,28 @@ public final class UploadManager {
         return Optional.ofNullable(sessions.get(sessionId)).map(session -> session.temporaryPath);
     }
 
-    private PreparedUpload inspect(UploadSession session) {
+    /**
+     * @param expectedHash the hash the uploader claimed, or {@code null} when the server produced the
+     *                     bytes itself and there is nothing to cross-check against
+     */
+    private PreparedUpload inspect(
+            Path path, String title, UUID owner, String uploaderName, String expectedHash) {
         try {
             InspectionResult inspection = inspector.inspect(
-                    session.temporaryPath,
+                    path,
                     limits.maxSourceBytes(),
                     Duration.ofMillis(limits.maxDurationMillis()));
             if (!formatEnabled(inspection.format())) {
                 return PreparedUpload.failed(UploadError.UNSUPPORTED_FORMAT);
             }
-            if (!inspection.sha256().equals(session.request.clientHash())) {
+            if (expectedHash != null && !inspection.sha256().equals(expectedHash)) {
                 return PreparedUpload.failed(UploadError.HASH_MISMATCH);
             }
             TrackReference reference = new TrackReference(
                     inspection.sha256(),
-                    session.request.title(),
-                    session.owner,
-                    session.request.uploaderName(),
+                    title,
+                    owner,
+                    uploaderName,
                     inspection.durationMillis(),
                     inspection.format());
             return PreparedUpload.success(reference, inspection.byteCount());
@@ -238,28 +259,62 @@ public final class UploadManager {
     }
 
     private FinishUploadResult finalizeUpload(
-            UploadSession session, PreparedUpload prepared, BooleanSupplier beforeCommit) {
+            Path temporary, UUID owner, PreparedUpload prepared, BooleanSupplier beforeCommit) {
         if (prepared.error != UploadError.NONE) {
-            cleanup(session);
+            deleteQuietly(temporary);
             return FinishUploadResult.failed(prepared.error);
         }
         if (!beforeCommit.getAsBoolean()) {
-            cleanup(session);
+            deleteQuietly(temporary);
             return FinishUploadResult.failed(UploadError.INVALID_WRITER);
         }
-        UploadError quotaError = quotaError(session.owner, prepared.byteCount);
+        Optional<TrackMetadata> existing = catalog.find(prepared.reference.sha256());
+        if (existing.isPresent()) {
+            deleteQuietly(temporary);
+            return FinishUploadResult.success(existing.get().reference());
+        }
+        UploadError quotaError = quotaError(owner, prepared.byteCount);
         if (quotaError != UploadError.NONE) {
-            cleanup(session);
+            deleteQuietly(temporary);
             return FinishUploadResult.failed(quotaError);
         }
         try {
-            storage.commit(session.temporaryPath, prepared.reference.sha256(), prepared.reference.format());
+            storage.commit(temporary, prepared.reference.sha256(), prepared.reference.format());
             catalog.add(new TrackMetadata(prepared.reference, prepared.byteCount, Instant.now()));
             return FinishUploadResult.success(prepared.reference);
         } catch (IOException | RuntimeException exception) {
-            cleanup(session);
+            deleteQuietly(temporary);
             return FinishUploadResult.failed(UploadError.STORAGE_FAILURE);
         }
+    }
+
+    /**
+     * Validates and stores a file the server itself downloaded, using the same limits, quotas and
+     * catalog rules as a player upload.
+     */
+    public CompletableFuture<FinishUploadResult> ingestDownloaded(
+            UUID playerId, int permissionLevel, String rawTitle, String uploaderName,
+            Path temporary, BooleanSupplier beforeCommit) {
+        AccessDecision access = accessService.mayUpload(AccessSubject.player(playerId, permissionLevel));
+        if (!access.allowed()) {
+            deleteQuietly(temporary);
+            return CompletableFuture.completedFuture(FinishUploadResult.failed(
+                    access.reason() == AccessDecision.Reason.DENIED
+                            ? UploadError.DENIED_PLAYER
+                            : UploadError.PERMISSION_DENIED));
+        }
+        String title = TitleSanitizer.sanitize(rawTitle);
+        if (title.isEmpty()) {
+            deleteQuietly(temporary);
+            return CompletableFuture.completedFuture(FinishUploadResult.failed(UploadError.INVALID_TITLE));
+        }
+        return CompletableFuture.supplyAsync(
+                        () -> inspect(temporary, title, playerId, uploaderName, null), ioExecutor)
+                .thenApplyAsync(prepared -> finalizeUpload(temporary, playerId, prepared, beforeCommit), serverExecutor)
+                .exceptionally(exception -> {
+                    deleteQuietly(temporary);
+                    return FinishUploadResult.failed(UploadError.STORAGE_FAILURE);
+                });
     }
 
     private UploadError quotaError(UUID playerId, long incomingBytes) {
