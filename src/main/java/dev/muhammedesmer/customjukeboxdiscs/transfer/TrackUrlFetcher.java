@@ -42,7 +42,7 @@ public final class TrackUrlFetcher {
             return allowed;
         }
         URI uri = URI.create(url.strip());
-        if (resolvesInsideTheServerNetwork(uri.getHost())) {
+        if (refusedByAddress(uri.getHost())) {
             return UploadError.URL_NOT_ALLOWED;
         }
         try {
@@ -70,7 +70,8 @@ public final class TrackUrlFetcher {
         }
     }
 
-    private static UploadError copyBounded(InputStream body, Path destination, long maxBytes) throws IOException {
+    /** Package private so the size cap can be exercised without standing up a web server. */
+    static UploadError copyBounded(InputStream body, Path destination, long maxBytes) throws IOException {
         byte[] buffer = new byte[BUFFER_BYTES];
         long written = 0;
         try (OutputStream output = Files.newOutputStream(destination)) {
@@ -86,10 +87,10 @@ public final class TrackUrlFetcher {
         return written == 0 ? UploadError.URL_FETCH_FAILED : UploadError.NONE;
     }
 
-    private static boolean resolvesInsideTheServerNetwork(String host) {
+    private boolean refusedByAddress(String host) {
         try {
             for (InetAddress address : InetAddress.getAllByName(host)) {
-                if (TrackUrlPolicy.isInternalAddress(address)) {
+                if (policy.refusesAddress(address)) {
                     return true;
                 }
             }

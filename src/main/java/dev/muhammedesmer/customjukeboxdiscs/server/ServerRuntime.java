@@ -205,7 +205,7 @@ public final class ServerRuntime implements ModPayloads.ServerHandler {
         }
         long maxBytes = config.snapshot().maxSourceBytes();
         TrackUrlFetcher fetcher = new TrackUrlFetcher(
-                new TrackUrlPolicy(config.urlAllowedHosts()),
+                new TrackUrlPolicy(config.urlAllowedHosts(), config.urlAllowPrivateAddresses()),
                 java.time.Duration.ofMillis(config.snapshot().uploadTimeoutMillis()));
         long fingerprint = payload.inputFingerprint();
         UUID playerId = player.getUUID();
