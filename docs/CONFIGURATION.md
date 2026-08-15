@@ -18,7 +18,8 @@
 | `formats.mp3Enabled` | true | Accept MP3 uploads. |
 | `formats.oggEnabled` | true | Accept OGG Vorbis uploads. |
 | `urlUploads.enabled` | false | Allow writing a disc from a direct https link. |
-| `urlUploads.allowedHosts` | archive.org, files.catbox.moe | Hosts the server may download from; subdomains count. |
+| `urlUploads.allowedHosts` | archive.org, freemusicarchive.org, cdn.discordapp.com, ... | Hosts the server may download from; subdomains count. |
+| `urlUploads.allowPrivateAddresses` | false | Allow downloading from the server's own network. Only for a host you control. |
 
 Values are validated as a set: `chunkBytes <= maxSourceBytes <= maxBytesPerPlayer <= maxServerBytes`,
 and at least one format must stay enabled.
@@ -63,8 +64,12 @@ instead of a local file. The server downloads it and runs it through the same va
 catalog as an upload, so nothing about playback changes.
 
 Only hosts in `allowedHosts` are fetched, redirects are refused, and addresses inside the server's own
-network are blocked. Streaming services are not supported: Spotify audio is DRM protected and
-downloading from YouTube breaks its terms of service.
+network are blocked unless `allowPrivateAddresses` is switched on.
+
+Streaming services are not supported and will not be. The link has to point at an audio file the
+server can download: your own web space, the Internet Archive, the Free Music Archive, a file you
+uploaded to Discord, a release asset on GitHub. Spotify audio is DRM protected, and taking audio out
+of YouTube breaks its terms of service.
 
 ## Turning custom music off
 

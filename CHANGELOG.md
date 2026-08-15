@@ -4,6 +4,12 @@ All notable changes to Custom Jukebox Discs. Versions follow [semantic versionin
 1.0.0 is reserved for the first release considered feature complete. Per-version notes for uploading
 live in `docs/changelogs/`.
 
+## 0.2.2
+
+### Added
+
+- `urlUploads.allowPrivateAddresses` for an audio host on the server's own network; off by default.
+
 ## 0.2.1
 
 ### Fixed

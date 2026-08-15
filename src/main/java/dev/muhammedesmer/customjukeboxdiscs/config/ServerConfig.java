@@ -21,6 +21,7 @@ public final class ServerConfig {
     private final ModConfigSpec.BooleanValue oggEnabled;
     private final ModConfigSpec.BooleanValue urlUploadsEnabled;
     private final ModConfigSpec.ConfigValue<java.util.List<? extends String>> urlAllowedHosts;
+    private final ModConfigSpec.BooleanValue urlAllowPrivateAddresses;
 
     static {
         var configured = new ModConfigSpec.Builder().configure(ServerConfig::new);
@@ -57,11 +58,20 @@ public final class ServerConfig {
                                 "freemusicarchive.org", "cdn.discordapp.com", "media.discordapp.net",
                                 "github.io", "githubusercontent.com"),
                         entry -> entry instanceof String host && !host.isBlank());
+        urlAllowPrivateAddresses = builder
+                .comment("Allow downloading from the server's own network. Only enable this when the",
+                        "audio source runs on a machine you control; it removes a safeguard that stops",
+                        "a link from reaching services that are not meant to be reachable from outside.")
+                .define("allowPrivateAddresses", false);
         builder.pop();
     }
 
     public boolean urlUploadsEnabled() {
         return urlUploadsEnabled.get();
+    }
+
+    public boolean urlAllowPrivateAddresses() {
+        return urlAllowPrivateAddresses.get();
     }
 
     public java.util.List<String> urlAllowedHosts() {

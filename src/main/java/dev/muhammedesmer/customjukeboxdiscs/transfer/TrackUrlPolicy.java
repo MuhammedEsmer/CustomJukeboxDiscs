@@ -17,8 +17,18 @@ import java.util.Optional;
  */
 public final class TrackUrlPolicy {
     private final List<String> allowedHosts;
+    private final boolean allowPrivateAddresses;
 
     public TrackUrlPolicy(List<String> allowedHosts) {
+        this(allowedHosts, false);
+    }
+
+    /**
+     * @param allowPrivateAddresses lets the server fetch from its own network, which an operator needs
+     *                              when the audio source runs on the same machine
+     */
+    public TrackUrlPolicy(List<String> allowedHosts, boolean allowPrivateAddresses) {
+        this.allowPrivateAddresses = allowPrivateAddresses;
         this.allowedHosts = allowedHosts.stream()
                 .map(host -> host.toLowerCase(Locale.ROOT).strip())
                 .filter(host -> !host.isEmpty())
@@ -32,7 +42,7 @@ public final class TrackUrlPolicy {
             return UploadError.URL_NOT_ALLOWED;
         }
         String host = hostOf(uri);
-        if (!isAllowedHost(host) || isInternalName(host)) {
+        if (!isAllowedHost(host) || (!allowPrivateAddresses && isInternalName(host))) {
             return UploadError.URL_NOT_ALLOWED;
         }
         // The extension is only a hint. What the bytes actually are is settled by the audio inspector
@@ -51,6 +61,11 @@ public final class TrackUrlPolicy {
             return Optional.of(AudioFormat.MP3);
         }
         return path.endsWith(".ogg") ? Optional.of(AudioFormat.OGG) : Optional.empty();
+    }
+
+    /** {@return whether a resolved address must be refused} */
+    public boolean refusesAddress(InetAddress address) {
+        return !allowPrivateAddresses && isInternalAddress(address);
     }
 
     /** {@return whether this address belongs to the machine or its private network} */
