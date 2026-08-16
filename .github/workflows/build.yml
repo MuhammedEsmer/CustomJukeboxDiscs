@@ -10,6 +10,8 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # The first run on a cold cache decompiles Minecraft, which is slow but nowhere near this long.
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -17,5 +19,26 @@ jobs:
           distribution: temurin
           java-version: '21'
       - uses: gradle/actions/setup-gradle@v4
-      - name: Test and build
-        run: ./gradlew test build --no-daemon
+
+      - name: Unit tests
+        run: ./gradlew test --no-daemon
+
+      # Loads the mod on a dedicated server, which is the only automated check that the mixins
+      # apply and that nothing client-only leaks onto the server.
+      - name: Game tests
+        run: ./gradlew runGameTestServer --no-daemon
+
+      - name: Build jar
+        run: ./gradlew build --no-daemon
+
+      - name: Upload reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            build/reports/tests/
+            build/test-results/
+            run/logs/
+          retention-days: 7
+          if-no-files-found: ignore
