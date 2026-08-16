@@ -42,17 +42,14 @@ Suggested summary, short enough for the card under the project name:
 
 ### Licence
 
-The repository currently says **All Rights Reserved**, and `LICENSE` explicitly withholds permission
-to distribute. That is a fine choice, but be aware of what it means on CurseForge:
+The mod is **MIT** licensed, so pack authors may include it. Two things follow from that:
 
-- Players can still download and use it.
-- **Nobody else can put it in a modpack.** Your own pack is fine because you own the mod, but any
-  other pack author is blocked.
-
-If you want the mod to spread through packs, switch `mod_license` in `gradle.properties` and the
-`LICENSE` file to something permissive such as MIT, and enable modpack distribution in the project
-settings. If you would rather keep control, leave it as it is and expect pack authors to ask you
-directly.
+- In the project settings, turn **on** the option that allows the project to be distributed in
+  modpacks. The licence permits it; the CurseForge switch has to agree, or pack authors still get
+  blocked.
+- The jar bundles JLayer, which is LGPL-2.1. That is fine to redistribute and its licence text ships
+  inside the jar, but do not repackage or shade JLayer into your own classes; leave it as the
+  separate jar under `META-INF/jarjar/`.
 
 ### Both sides required
 
