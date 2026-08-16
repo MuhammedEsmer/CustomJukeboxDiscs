@@ -8,7 +8,7 @@ Everything the upload form asks for, and where it lives in this repository.
 | --- | --- |
 | Project avatar | `docs/branding/curseforge-avatar.png` (400x400) |
 | Summary | one line, see below |
-| Description | `docs/MOD_PAGE.md`, the English half |
+| Description | `docs/mod-page.md`, pasted with the editor set to Markdown |
 | The file | `releases/customjukeboxdiscs-1.21.1-<version>.jar` |
 | Changelog | `docs/changelogs/<version>.md` |
 
