@@ -4,6 +4,18 @@ All notable changes to Custom Jukebox Discs. Versions follow [semantic versionin
 1.0.0 is reserved for the first release considered feature complete. Per-version notes for uploading
 live in `docs/changelogs/`.
 
+## 0.2.5
+
+No player-facing changes.
+
+### Fixed
+
+- The Gradle wrapper was committed without its executable bit, so continuous builds never ran.
+
+### Changed
+
+- Continuous builds now run the game tests on a dedicated server as well as the unit tests.
+
 ## 0.2.4
 
 ### Changed
