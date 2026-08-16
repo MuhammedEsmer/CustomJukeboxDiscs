@@ -1,5 +1,8 @@
 # Third-party licenses
 
+Custom Jukebox Discs itself is MIT licensed; see `LICENSE`. The libraries below
+are bundled in the published jar and keep their own terms.
+
 ## mp3agic 0.9.1
 
 - Project: https://github.com/mpatric/mp3agic
@@ -26,10 +29,12 @@ Apache 2.0 license text is packaged at
 - License: GNU Lesser General Public License 2.1
 - Copyright: JavaZOOM
 
-JLayer is bundled for client-side MP3 decoding. The mod does not modify JLayer.
-Its license is available at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
-and the corresponding unmodified source artifact is available from Maven Central
-under `javazoom:jlayer:1.0.1`.
+JLayer is bundled for client-side MP3 decoding. The mod does not modify JLayer,
+and it is packaged as its own unmodified jar under `META-INF/jarjar/`, so it can
+be replaced with another build of the same library. Its license text is packaged
+at `META-INF/licenses/customjukeboxdiscs/jlayer-LGPL-2.1.txt` and the
+corresponding source artifact is available from Maven Central under
+`javazoom:jlayer:1.0.1`.
 
 No native codec, FFmpeg executable, telemetry library, or remote service is
 bundled in this mod.

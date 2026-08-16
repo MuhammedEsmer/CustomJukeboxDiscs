@@ -4,6 +4,16 @@ All notable changes to Custom Jukebox Discs. Versions follow [semantic versionin
 1.0.0 is reserved for the first release considered feature complete. Per-version notes for uploading
 live in `docs/changelogs/`.
 
+## 0.2.4
+
+### Changed
+
+- Released under the MIT licence; modpacks may include it freely.
+
+### Fixed
+
+- Packaged the LGPL-2.1 licence text for the bundled JLayer decoder.
+
 ## 0.2.3
 
 ### Added

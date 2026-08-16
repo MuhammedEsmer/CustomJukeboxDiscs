@@ -64,6 +64,7 @@ the Free Music Archive, a file you uploaded to Discord.
 - Minecraft 1.21.1, NeoForge 21.1.231 or newer
 - Required on both the client and the server
 - No FFmpeg, no native binaries, no telemetry, nothing phoning home
+- MIT licensed, so modpacks are welcome to include it
 
 ### A word on what you upload
 
@@ -130,6 +131,7 @@ Discord'a attığın bir dosya.
 - Minecraft 1.21.1, NeoForge 21.1.231 veya üzeri
 - Hem istemcide hem sunucuda gerekli
 - FFmpeg yok, native binary yok, telemetri yok
+- MIT lisanslı, modpack'lere serbestçe eklenebilir
 
 ### Yüklediklerin hakkında
 
