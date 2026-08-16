@@ -1,139 +1,122 @@
 # Mod page copy
 
-Paste-ready description for CurseForge and similar sites. English first, Turkish below.
+Paste the block between the markers into the CurseForge description editor. Everything after it is
+notes for you, not for the page.
+
+<!-- ===== PASTE FROM HERE ===== -->
+
+**Any MP3 or OGG on your disk becomes a music disc you can put in a jukebox.**
+
+[GitHub](https://github.com/MuhammedEsmer/CustomJukeboxDiscs) ·
+[Report a bug](https://github.com/MuhammedEsmer/CustomJukeboxDiscs/issues)
+
+Minecraft 1.21.1 · NeoForge · needs to be on the client **and** the server · MIT licensed
+
+## Getting started
+
+1. Drop your `.mp3` or `.ogg` files into `.minecraft/customjukeboxdiscs/uploads`
+2. Craft a Disc Writer (iron, redstone, a jukebox) and some Blank Discs (paper and an iron nugget)
+3. Right-click the writer, put a Blank Disc in the slot, pick a file from the list, hit Write
+4. Take the disc out and put it in any normal jukebox
+
+That is it. The disc is a real music disc from there on: hoppers move it, comparators read it,
+breaking the jukebox stops the song, walking away makes it quieter.
+
+## What you get
+
+- Your music through the vanilla jukebox, on the Records volume slider, with proper distance falloff
+- 12 disc designs, randomly assigned when you write one, so a wall of discs is not 12 identical items
+- **Disc Rack** — a 9 slot shelf that shows the discs inside it. Right-click a disc to grab it,
+  sneak-click to open the whole thing like a chest. Comparators read how full it is
+- Works with the Sophisticated Backpacks / Storage jukebox upgrade. Music from a backpack on your
+  back follows you around
+- Press **J** to turn custom music off for yourself. The server then stops sending you tracks at all,
+  so it costs you nothing in bandwidth
+- Nothing is transcoded, nothing is bundled that runs outside Java. No FFmpeg, no native binaries,
+  no telemetry
+
+## If you run a server
+
+The server decides everything. It re-reads every uploaded file, works out the real length itself, and
+ignores whatever the client claims about it.
+
+**By default only operators can write discs.** This trips people up on day one. To open it up:
+
+```
+/customdiscs access mode everyone
+/customdiscs access mode allowlist
+/customdiscs access allow <player>
+/customdiscs access deny <player>
+```
+
+A deny entry beats everything, including operator status.
+
+To see and clean up what people wrote:
+
+```
+/customdiscs tracks list [page]
+/customdiscs tracks info <sha256>
+/customdiscs tracks delete <sha256>
+/customdiscs reload
+```
+
+Default limits, all editable in `customjukeboxdiscs-server.toml`:
+
+| | |
+|---|---|
+| File size | 10 MiB |
+| Track length | 10 minutes |
+| Tracks per player | 20 |
+| Storage per player | 100 MiB |
+| Storage per server | 2 GiB |
+| Transfer rate | 512 KiB/s per player |
+
+Tracks are stored in the world folder under their content hash, so the same song uploaded by five
+people takes one slot on disk. A player downloads a track once and caches it for that server;
+listening to it again is free.
+
+## Writing from a link
+
+Off by default. Switch on `urlUploads.enabled` and list the hosts you trust, and players can paste an
+`https` link to an audio file instead of using a local file. The server downloads it and puts it
+through exactly the same checks as an upload.
+
+**This is not a streaming mod.** It cannot play from YouTube, Spotify or anything like them, and it
+never will. The link has to point at an actual audio file — your own web space, the Internet Archive,
+the Free Music Archive, a file you dropped in Discord.
+
+## Worth knowing before you install
+
+- Client and server both need the mod. A server running it alone will not work
+- Audio is downmixed to mono. OpenAL will not position a stereo source, and a music disc that plays
+  at the same volume everywhere in the world is worse than a mono one that fades properly
+- Only upload music you are allowed to share. Server owners choose who can write discs and can delete
+  anything at any time
+- Modpacks are welcome, no need to ask
+
+<!-- ===== PASTE TO HERE ===== -->
 
 ---
 
-## English
+## Screenshots to take before publishing
 
-### Custom Jukebox Discs
+The pages of the mods that do well are broken up by images every couple of sections. Take these and
+drop them into the description where the headings are:
 
-**Put your own music on a real jukebox.**
+1. **The Disc Writer screen**, file list populated, a Blank Disc in the slot — goes under "Getting started"
+2. **A row of written discs in an inventory**, showing several different colours — under "What you get"
+3. **A Disc Rack on a wall with 6-9 discs in it**, seen from the front so the colours read — same section
+4. **A jukebox playing**, with the note particles and the track name toast visible — near the top
 
-Drop an MP3 or OGG file into a folder, write it onto a disc in the Disc Writer, and play it in any
-vanilla jukebox. It sounds like a record should: positional, fading with distance, on the same volume
-slider as every other record.
+A short GIF of writing a disc and dropping it into a jukebox would carry the whole page if you have
+the patience for it.
 
-### How it works
+## Turkish summary
 
-1. Put your `.mp3` or `.ogg` files in `.minecraft/customjukeboxdiscs/uploads`
-2. Craft a **Disc Writer** and a **Blank Disc**
-3. Open the writer, pick your track, name it, press Write
-4. Put the finished disc in a jukebox
+For a Turkish community post, not for CurseForge:
 
-Discs behave exactly like vanilla records: hoppers move them, comparators read them, breaking the
-jukebox stops the music.
-
-### Built for servers
-
-The server is in charge of everything. It re-checks every upload, works out the real duration itself,
-and never trusts what a client claims.
-
-- **Permissions**: uploading is limited to operators by default. Switch to an allowlist or open it to
-  everyone with `/customdiscs access mode`. A deny entry beats everything.
-- **Quotas**: per-file size, track length, tracks per player, storage per player, storage per server.
-- **Moderation**: `/customdiscs tracks list`, `info` and `delete` to audit and remove what people wrote.
-- **Storage**: tracks live in the world folder, addressed by content hash, so the same song uploaded
-  twice is stored once.
-- **Bandwidth**: a player downloads a track once and it is cached for that server. Repeat plays are free.
-
-### Not everyone wants to hear it
-
-Any player can press **J** to switch custom music off for themselves. When it is off, the server
-stops sending them tracks entirely, so it costs them no bandwidth at all.
-
-### More than a disc
-
-- **Twelve disc designs**, picked at random when a disc is written, so a shelf of music is easy to read
-- **Disc Rack**: a nine slot shelf that shows the discs it holds. Right-click a disc to take it, sneak
-  to open it like a chest
-- **Sophisticated Backpacks / Storage**: works with their jukebox upgrade, music included. Music from a
-  backpack you carry travels with you
-
-### Writing from a link
-
-Operators can allow writing a track from a direct `https` link to an audio file, from hosts they
-choose. The server downloads and validates it exactly like an upload. Off by default.
-
-**This is not a streaming mod.** It cannot play from YouTube, Spotify or similar services, and that is
-not planned. The link has to point at an actual audio file: your own web space, the Internet Archive,
-the Free Music Archive, a file you uploaded to Discord.
-
-### Requirements
-
-- Minecraft 1.21.1, NeoForge 21.1.231 or newer
-- Required on both the client and the server
-- No FFmpeg, no native binaries, no telemetry, nothing phoning home
-- MIT licensed, so modpacks are welcome to include it
-
-### A word on what you upload
-
-Only upload audio you have the right to share. Server operators decide who may write discs and can
-delete anything at any time.
-
----
-
-## Türkçe
-
-### Custom Jukebox Discs
-
-**Kendi müziğini gerçek bir jukebox'ta çal.**
-
-Bir MP3 ya da OGG dosyasını klasöre at, Disk Yazıcı ile diske yaz, herhangi bir vanilla jukebox'a tak.
-Plak gibi duyulur: konumsal, uzaklaştıkça kısılan, diğer plaklarla aynı ses ayarına bağlı.
-
-### Nasıl çalışır
-
-1. `.mp3` veya `.ogg` dosyalarını `.minecraft/customjukeboxdiscs/uploads` klasörüne koy
-2. **Disk Yazıcı** ve **Boş Disk** üret
-3. Yazıcıyı aç, parçanı seç, adını ver, Yaz'a bas
-4. Çıkan diski jukebox'a tak
-
-Diskler vanilla plaklarla aynı davranır: hunilerle taşınır, komparatör okur, jukebox kırılınca müzik durur.
-
-### Sunucular için tasarlandı
-
-Her şeyin kararını sunucu verir. Yüklenen dosyayı baştan doğrular, süreyi kendisi hesaplar, istemcinin
-söylediği hiçbir şeye güvenmez.
-
-- **İzinler**: yükleme varsayılan olarak yetkililere açık. `/customdiscs access mode` ile izin listesine
-  geçebilir ya da herkese açabilirsin. Yasaklama her şeyi ezer.
-- **Kotalar**: dosya boyutu, parça süresi, oyuncu başına parça ve depolama, sunucu toplamı.
-- **Denetim**: `/customdiscs tracks list`, `info`, `delete` ile yazılanları görebilir ve silebilirsin.
-- **Depolama**: parçalar dünya klasöründe içerik hash'iyle saklanır; aynı şarkı iki kez yüklenirse yer
-  bir kez kaplar.
-- **Bant genişliği**: oyuncu bir parçayı bir kez indirir, o sunucu için önbelleğe alınır.
-
-### Herkes dinlemek zorunda değil
-
-Her oyuncu **J** ile özel müziği kendine kapatabilir. Kapalıyken sunucu ona parça göndermeyi tamamen
-bırakır — yani hiç internet harcamaz.
-
-### Sadece disk değil
-
-- **On iki disk tasarımı**, yazarken rastgele seçilir; raftaki müzikleri ayırt etmek kolay olur
-- **Disk Rafı**: dokuz gözlü, içindeki diskleri dışarıdan gösteren raf. Diske sağ tık alır, eğilip sağ
-  tık sandık gibi açar
-- **Sophisticated Backpacks / Storage**: jukebox upgrade'iyle çalışır. Sırtındaki çantanın müziği
-  seninle gelir
-
-### Linkten yazma
-
-Sunucu yöneticisi, seçtiği host'lardan doğrudan `https` ses dosyası linkiyle disk yazmaya izin
-verebilir. Sunucu dosyayı indirip yüklemeyle aynı doğrulamadan geçirir. Varsayılan olarak kapalı.
-
-**Bu bir streaming modu değil.** YouTube, Spotify gibi servislerden çalamaz, çalması da planlanmıyor.
-Link gerçek bir ses dosyasına işaret etmeli: kendi web alanın, Internet Archive, Free Music Archive,
-Discord'a attığın bir dosya.
-
-### Gereksinimler
-
-- Minecraft 1.21.1, NeoForge 21.1.231 veya üzeri
-- Hem istemcide hem sunucuda gerekli
-- FFmpeg yok, native binary yok, telemetri yok
-- MIT lisanslı, modpack'lere serbestçe eklenebilir
-
-### Yüklediklerin hakkında
-
-Sadece paylaşma hakkına sahip olduğun sesi yükle. Kimin disk yazabileceğine sunucu yöneticisi karar
-verir ve istediği anda silebilir.
+> Bilgisayarındaki herhangi bir MP3 veya OGG dosyasını jukebox'a takabileceğin bir plağa çevirir.
+> Dosyayı `customjukeboxdiscs/uploads` klasörüne at, Disk Yazıcı'da boş diske yaz, jukebox'a tak.
+> Sunucu her dosyayı kendi doğrular, kotaları uygular; kimin disk yazabileceğine sunucu sahibi karar
+> verir. 12 farklı disk görseli, 9 gözlü Disk Rafı, Sophisticated Backpacks desteği ve J tuşuyla
+> müziği kendine kapatma seçeneği var. Streaming yok: YouTube ve Spotify çalmaz, çalmayacak.
