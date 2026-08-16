@@ -1,0 +1,84 @@
+<p><strong>Any MP3 or OGG on your disk becomes a music disc you can put in a jukebox.</strong></p>
+
+<p>
+  <a href="https://github.com/MuhammedEsmer/CustomJukeboxDiscs">GitHub</a> &middot;
+  <a href="https://github.com/MuhammedEsmer/CustomJukeboxDiscs/issues">Report a bug</a>
+</p>
+
+<p>Minecraft 1.21.1 &middot; NeoForge &middot; needs to be on the client <strong>and</strong> the server &middot; MIT licensed</p>
+
+<!-- IMAGE 1: the room with disc racks on the wall -->
+
+<h2>Getting started</h2>
+
+<ol>
+  <li>Drop your <code>.mp3</code> or <code>.ogg</code> files into <code>.minecraft/customjukeboxdiscs/uploads</code></li>
+  <li>Craft a Disc Writer (iron, redstone, a jukebox) and some Blank Discs (paper and an iron nugget)</li>
+  <li>Right-click the writer, put a Blank Disc in the slot, pick a file from the list, hit Write</li>
+  <li>Take the disc out and put it in any normal jukebox</li>
+</ol>
+
+<p>That is it. The disc is a real music disc from there on: hoppers move it, comparators read it, breaking the jukebox stops the song, walking away makes it quieter.</p>
+
+<!-- IMAGE 2: the Disc Writer screen -->
+
+<h2>What you get</h2>
+
+<ul>
+  <li>Your music through the vanilla jukebox, on the Records volume slider, with proper distance falloff</li>
+  <li>12 disc designs, randomly assigned when you write one, so a wall of discs is not 12 identical items</li>
+  <li><strong>Disc Rack</strong> &mdash; a 9 slot shelf that shows the discs inside it. Right-click a disc to grab it, sneak-click to open the whole thing like a chest. Comparators read how full it is</li>
+  <li>Works with the Sophisticated Backpacks / Storage jukebox upgrade. Music from a backpack on your back follows you around</li>
+  <li>Press <strong>J</strong> to turn custom music off for yourself. The server then stops sending you tracks at all, so it costs you nothing in bandwidth</li>
+  <li>Nothing is transcoded, nothing is bundled that runs outside Java. No FFmpeg, no native binaries, no telemetry</li>
+</ul>
+
+<!-- IMAGE 3: the Disc Rack window with nine discs in it -->
+
+<h2>If you run a server</h2>
+
+<p>The server decides everything. It re-reads every uploaded file, works out the real length itself, and ignores whatever the client claims about it.</p>
+
+<p><strong>By default only operators can write discs.</strong> This trips people up on day one. To open it up:</p>
+
+<pre><code>/customdiscs access mode everyone
+/customdiscs access mode allowlist
+/customdiscs access allow &lt;player&gt;
+/customdiscs access deny &lt;player&gt;</code></pre>
+
+<p>A deny entry beats everything, including operator status.</p>
+
+<p>To see and clean up what people wrote:</p>
+
+<pre><code>/customdiscs tracks list [page]
+/customdiscs tracks info &lt;sha256&gt;
+/customdiscs tracks delete &lt;sha256&gt;
+/customdiscs reload</code></pre>
+
+<p>Default limits, all editable in <code>customjukeboxdiscs-server.toml</code>:</p>
+
+<table>
+  <tr><td>File size</td><td>10 MiB</td></tr>
+  <tr><td>Track length</td><td>10 minutes</td></tr>
+  <tr><td>Tracks per player</td><td>20</td></tr>
+  <tr><td>Storage per player</td><td>100 MiB</td></tr>
+  <tr><td>Storage per server</td><td>2 GiB</td></tr>
+  <tr><td>Transfer rate</td><td>512 KiB/s per player</td></tr>
+</table>
+
+<p>Tracks are stored in the world folder under their content hash, so the same song uploaded by five people takes one slot on disk. A player downloads a track once and caches it for that server; listening to it again is free.</p>
+
+<h2>Writing from a link</h2>
+
+<p>Off by default. Switch on <code>urlUploads.enabled</code> and list the hosts you trust, and players can paste an <code>https</code> link to an audio file instead of using a local file. The server downloads it and puts it through exactly the same checks as an upload.</p>
+
+<p><strong>This is not a streaming mod.</strong> It cannot play from YouTube, Spotify or anything like them, and it never will. The link has to point at an actual audio file &mdash; your own web space, the Internet Archive, the Free Music Archive, a file you dropped in Discord.</p>
+
+<h2>Worth knowing before you install</h2>
+
+<ul>
+  <li>Client and server both need the mod. A server running it alone will not work</li>
+  <li>Audio is downmixed to mono. OpenAL will not position a stereo source, and a music disc that plays at the same volume everywhere in the world is worse than a mono one that fades properly</li>
+  <li>Only upload music you are allowed to share. Server owners choose who can write discs and can delete anything at any time</li>
+  <li>Modpacks are welcome, no need to ask</li>
+</ul>
