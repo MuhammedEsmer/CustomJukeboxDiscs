@@ -12,6 +12,10 @@ Everything the upload form asks for, and where it lives in this repository.
 | The file | `releases/customjukeboxdiscs-1.21.1-<version>.jar` |
 | Changelog | `docs/changelogs/<version>.md` |
 
+`CHANGELOG.md` is the developer record and lists every change. The files in `docs/changelogs/` are
+written for players and are what you paste into an upload; the first release note in particular
+describes the mod rather than the diff, because nobody has seen the versions before it.
+
 Suggested summary, short enough for the card under the project name:
 
 > Put your own MP3 and OGG music on real jukebox discs, with server-side permissions and quotas.
