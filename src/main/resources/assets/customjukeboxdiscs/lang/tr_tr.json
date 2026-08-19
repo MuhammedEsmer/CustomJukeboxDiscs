@@ -65,5 +65,7 @@
   "screen.customjukeboxdiscs.disc_writer.title_hint": "Parça adı",
   "screen.customjukeboxdiscs.disc_writer.url": "Link",
   "screen.customjukeboxdiscs.disc_writer.url_hint": "ses dosyasına https linki",
-  "upload.customjukeboxdiscs.fetching": "Link indiriliyor..."
+  "upload.customjukeboxdiscs.fetching": "Link indiriliyor...",
+  "upload.customjukeboxdiscs.error.another_upload_active": "Başka biri yükleme yapıyor; sıradasın",
+  "upload.customjukeboxdiscs.queued": "Sırada bekleniyor, başka biri yüklüyor..."
 }

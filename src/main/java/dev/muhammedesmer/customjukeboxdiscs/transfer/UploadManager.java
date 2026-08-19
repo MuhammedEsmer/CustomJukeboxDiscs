@@ -91,6 +91,13 @@ public final class UploadManager {
         if (existing.isPresent()) {
             return BeginUploadResult.existing(existing.get().reference());
         }
+        // One upload runs on the whole server at a time; the disk work is single threaded anyway, and
+        // it lets a waiting player be told plainly that someone else is going first.
+        boolean someoneElseUploading = sessions.values().stream()
+                .anyMatch(session -> !session.owner.equals(playerId));
+        if (someoneElseUploading) {
+            return BeginUploadResult.failed(UploadError.ANOTHER_UPLOAD_ACTIVE);
+        }
         long activeSessions = sessions.values().stream().filter(session -> session.owner.equals(playerId)).count();
         if (activeSessions >= limits.maxSessionsPerPlayer()) {
             return BeginUploadResult.failed(UploadError.ACTIVE_SESSION_LIMIT);
