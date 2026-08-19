@@ -4,6 +4,14 @@ All notable changes to Custom Jukebox Discs. Versions follow [semantic versionin
 1.0.0 is reserved for the first release considered feature complete. Per-version notes for uploading
 live in `docs/changelogs/`.
 
+## 0.2.6
+
+### Fixed
+
+- Writing a disc failed on every dedicated server ("The Disc Writer changed"): the writer
+  fingerprint was compared across the client and server processes, where an item identity hash
+  never matches. The server now uses its own fingerprint throughout. Singleplayer was unaffected.
+
 ## 0.2.5
 
 No player-facing changes.
