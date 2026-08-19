@@ -159,17 +159,20 @@ public final class ServerRuntime implements ModPayloads.ServerHandler {
 
     private void begin(UploadBeginRequest payload, ServerPlayer player) {
         if (!(player.containerMenu instanceof DiscWriterMenu menu)
-                || !(menu.writer() instanceof DiscWriterBlockEntity writer)
-                || writer.inputFingerprint() != payload.inputFingerprint()) {
+                || !(menu.writer() instanceof DiscWriterBlockEntity writer)) {
             send(player, rejected(UploadError.INVALID_WRITER));
             return;
         }
+        // The fingerprint only detects whether the slot changes between begin and finish, so it must be
+        // the server's own value. A client's fingerprint is a different JVM's identity hash and would
+        // never match, which broke every write on a dedicated server.
+        long fingerprint = writer.inputFingerprint();
         BeginUploadResult result = uploads.begin(
                 player.getUUID(), player.hasPermissions(3) ? 3 : 0,
                 new BeginUpload(payload.clientHash(), payload.declaredBytes(), payload.formatHint(),
                         payload.title(), player.getGameProfile().getName()));
         if (result.alreadyPresent()) {
-            if (writer.writeDisc(payload.inputFingerprint(), result.existingTrack())) {
+            if (writer.writeDisc(fingerprint, result.existingTrack())) {
                 send(player, new UploadBeginResponse(
                         UploadBeginResponse.Status.ALREADY_PRESENT, UploadError.NONE, null, 0, result.existingTrack()));
             } else {
@@ -178,7 +181,7 @@ public final class ServerRuntime implements ModPayloads.ServerHandler {
         } else if (result.accepted()) {
             writers.put(result.sessionId(), new WriterReservation(
                     player.getUUID(), player, (ServerLevel) writer.getLevel(), writer.getBlockPos(), writer, menu,
-                    payload.inputFingerprint()));
+                    fingerprint));
             send(player, new UploadBeginResponse(
                     UploadBeginResponse.Status.ACCEPTED, UploadError.NONE, result.sessionId(), result.chunkBytes(), null));
         } else {
@@ -198,8 +201,7 @@ public final class ServerRuntime implements ModPayloads.ServerHandler {
             return;
         }
         if (!(player.containerMenu instanceof DiscWriterMenu menu)
-                || !(menu.writer() instanceof DiscWriterBlockEntity writer)
-                || writer.inputFingerprint() != payload.inputFingerprint()) {
+                || !(menu.writer() instanceof DiscWriterBlockEntity writer)) {
             send(player, new UploadResult(UploadError.INVALID_WRITER, null));
             return;
         }
@@ -207,7 +209,8 @@ public final class ServerRuntime implements ModPayloads.ServerHandler {
         TrackUrlFetcher fetcher = new TrackUrlFetcher(
                 new TrackUrlPolicy(config.urlAllowedHosts(), config.urlAllowPrivateAddresses()),
                 java.time.Duration.ofMillis(config.snapshot().uploadTimeoutMillis()));
-        long fingerprint = payload.inputFingerprint();
+        // Server's own fingerprint, see begin(): a client value would never match across JVMs.
+        long fingerprint = writer.inputFingerprint();
         UUID playerId = player.getUUID();
         int permissionLevel = player.hasPermissions(3) ? 3 : 0;
         String uploaderName = player.getGameProfile().getName();
