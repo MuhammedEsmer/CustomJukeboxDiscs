@@ -246,6 +246,23 @@ final class UploadManagerTest {
         assertEquals(UploadError.INVALID_TITLE, beginWithTitle(100, "a".repeat(64), "§a§b").error());
     }
 
+    @Test
+    void onlyOneUploadRunsAtATimeAcrossPlayers() {
+        UUID otherPlayer = UUID.fromString("87654321-4321-6789-9234-567812345678");
+
+        BeginUploadResult first = begin(100, "a".repeat(64), 0);
+        assertTrue(first.accepted());
+
+        BeginUploadResult second = manager.begin(otherPlayer, 0,
+                new BeginUpload("b".repeat(64), 100, AudioFormat.MP3, "Track", "Other"));
+        assertEquals(UploadError.ANOTHER_UPLOAD_ACTIVE, second.error());
+
+        manager.cancelAll(PLAYER);
+        BeginUploadResult afterFree = manager.begin(otherPlayer, 0,
+                new BeginUpload("b".repeat(64), 100, AudioFormat.MP3, "Track", "Other"));
+        assertTrue(afterFree.accepted(), "the queue frees up once the active upload ends");
+    }
+
     private BeginUploadResult begin(long bytes, String hash, int permissionLevel) {
         return manager.begin(PLAYER, permissionLevel,
                 new BeginUpload(hash, bytes, AudioFormat.MP3, "Track", "Player"));

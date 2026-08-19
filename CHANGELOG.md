@@ -4,6 +4,13 @@ All notable changes to Custom Jukebox Discs. Versions follow [semantic versionin
 1.0.0 is reserved for the first release considered feature complete. Per-version notes for uploading
 live in `docs/changelogs/`.
 
+## 0.2.7
+
+### Changed
+
+- Uploads are serialised server-wide: one disc is written at a time. A second writer is told
+  "Someone else is uploading; you are next in the queue" and retries automatically until it is free.
+
 ## 0.2.6
 
 ### Fixed

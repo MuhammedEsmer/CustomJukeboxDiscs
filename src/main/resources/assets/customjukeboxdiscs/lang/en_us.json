@@ -65,5 +65,7 @@
   "screen.customjukeboxdiscs.disc_writer.title_hint": "Track title",
   "screen.customjukeboxdiscs.disc_writer.url": "Link",
   "screen.customjukeboxdiscs.disc_writer.url_hint": "https link to an audio file",
-  "upload.customjukeboxdiscs.fetching": "Downloading link..."
+  "upload.customjukeboxdiscs.fetching": "Downloading link...",
+  "upload.customjukeboxdiscs.error.another_upload_active": "Someone else is uploading; you are next in the queue",
+  "upload.customjukeboxdiscs.queued": "Waiting in the queue, someone else is uploading..."
 }

@@ -35,8 +35,11 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 public final class ClientUploadManager implements ModPayloads.ClientHandler {
     public static final ClientUploadManager INSTANCE = new ClientUploadManager();
     private static final long SAFE_BYTES_PER_SECOND = 256L * 1024L;
+    private static final int MAX_QUEUE_WAITS = 40;
+    private static final int RETRY_DELAY_SECONDS = 3;
 
     private volatile Pending pending;
+    private volatile int queueWaits;
 
     private ClientUploadManager() {
     }
@@ -47,7 +50,7 @@ public final class ClientUploadManager implements ModPayloads.ClientHandler {
             status.accept(Component.translatable("upload.customjukeboxdiscs.busy"));
             return;
         }
-        pending = new Pending(null, "", 0, status, progress -> { });
+        pending = new Pending(null, "", 0, AudioFormat.MP3, title, inputFingerprint, status, progress -> { });
         status.accept(Component.translatable("upload.customjukeboxdiscs.fetching"));
         PacketDistributor.sendToServer(new UrlUploadRequest(url, title, inputFingerprint));
     }
@@ -59,14 +62,15 @@ public final class ClientUploadManager implements ModPayloads.ClientHandler {
             return;
         }
         status.accept(Component.translatable("upload.customjukeboxdiscs.hashing"));
+        queueWaits = 0;
         CompletableFuture.runAsync(() -> {
             try {
                 long size = Files.size(file);
                 String hash = sha256(file);
-                Pending upload = new Pending(file, hash, size, status, progress);
+                Pending upload = new Pending(file, hash, size, format(file), title, inputFingerprint, status, progress);
                 pending = upload;
                 PacketDistributor.sendToServer(new UploadBeginRequest(
-                        hash, size, format(file), title, inputFingerprint));
+                        hash, size, upload.format, title, inputFingerprint));
             } catch (IOException | RuntimeException exception) {
                 Minecraft.getInstance().execute(() -> status.accept(
                         Component.translatable("upload.customjukeboxdiscs.read_failed")));
@@ -79,6 +83,14 @@ public final class ClientUploadManager implements ModPayloads.ClientHandler {
         Pending current = pending;
         if (current == null) return;
         if (response.status() == UploadBeginResponse.Status.REJECTED) {
+            if (response.error() == UploadError.ANOTHER_UPLOAD_ACTIVE
+                    && current.file != null && queueWaits < MAX_QUEUE_WAITS) {
+                queueWaits++;
+                Minecraft.getInstance().execute(() -> current.status.accept(
+                        Component.translatable("upload.customjukeboxdiscs.queued")));
+                scheduleQueueRetry(current);
+                return;
+            }
             finishStatus(current, Component.translatable(
                     "upload.customjukeboxdiscs.failed", Component.translatable(response.error().translationKey())));
         } else if (response.status() == UploadBeginResponse.Status.ALREADY_PRESENT) {
@@ -129,6 +141,17 @@ public final class ClientUploadManager implements ModPayloads.ClientHandler {
     @Override public void handle(DownloadChunk payload, IPayloadContext context) { context.enqueueWork(() -> ClientPlaybackManager.INSTANCE.chunk(payload)); }
     @Override public void handle(TrackUnavailable payload, IPayloadContext context) { context.enqueueWork(() -> ClientPlaybackManager.INSTANCE.unavailable(payload)); }
 
+    /** Re-asks the server after a delay while another player's upload is going first. */
+    private void scheduleQueueRetry(Pending current) {
+        CompletableFuture.delayedExecutor(RETRY_DELAY_SECONDS, java.util.concurrent.TimeUnit.SECONDS)
+                .execute(() -> Minecraft.getInstance().execute(() -> {
+                    if (pending == current) {
+                        PacketDistributor.sendToServer(new UploadBeginRequest(
+                                current.hash, current.size, current.format, current.title, current.inputFingerprint));
+                    }
+                }));
+    }
+
     private void finishStatus(Pending current, Component message) {
         pending = null;
         Minecraft.getInstance().execute(() -> {
@@ -157,6 +180,7 @@ public final class ClientUploadManager implements ModPayloads.ClientHandler {
     }
 
     private record Pending(
-            Path file, String hash, long size, Consumer<Component> status, DoubleConsumer progress) {
+            Path file, String hash, long size, AudioFormat format, String title, long inputFingerprint,
+            Consumer<Component> status, DoubleConsumer progress) {
     }
 }
