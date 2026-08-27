@@ -1,0 +1,9 @@
+{
+  "variants": {
+    "facing=north": { "model": "customjukeboxdiscs:disc_rack" },
+    "facing=east": { "model": "customjukeboxdiscs:disc_rack", "y": 90 },
+    "facing=south": { "model": "customjukeboxdiscs:disc_rack", "y": 180 },
+    "facing=west": { "model": "customjukeboxdiscs:disc_rack", "y": 270 },
+    "inventory": { "model": "customjukeboxdiscs:disc_rack" }
+  }
+}

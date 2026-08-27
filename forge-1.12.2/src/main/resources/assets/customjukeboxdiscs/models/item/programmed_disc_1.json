@@ -1,0 +1,6 @@
+{
+    "textures":  {
+                     "layer0":  "customjukeboxdiscs:items/programmed_disc_1"
+                 },
+    "parent":  "item/generated"
+}

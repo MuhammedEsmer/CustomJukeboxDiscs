@@ -1,0 +1,7 @@
+{
+  "parent": "block/cube_column",
+  "textures": {
+    "end": "minecraft:blocks/jukebox_top",
+    "side": "minecraft:blocks/jukebox_side"
+  }
+}

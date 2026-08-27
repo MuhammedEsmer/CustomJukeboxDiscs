@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "normal": { "model": "customjukeboxdiscs:disc_writer" },
+    "inventory": { "model": "customjukeboxdiscs:disc_writer" }
+  }
+}
