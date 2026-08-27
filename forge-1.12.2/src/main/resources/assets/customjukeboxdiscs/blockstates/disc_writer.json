@@ -1,6 +1,9 @@
 {
   "variants": {
-    "normal": { "model": "customjukeboxdiscs:disc_writer" },
+    "facing=north": { "model": "customjukeboxdiscs:disc_writer" },
+    "facing=east":  { "model": "customjukeboxdiscs:disc_writer", "y": 90 },
+    "facing=south": { "model": "customjukeboxdiscs:disc_writer", "y": 180 },
+    "facing=west":  { "model": "customjukeboxdiscs:disc_writer", "y": 270 },
     "inventory": { "model": "customjukeboxdiscs:disc_writer" }
   }
 }
