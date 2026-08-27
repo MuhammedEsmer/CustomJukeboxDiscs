@@ -385,13 +385,15 @@ public final class ServerRuntime {
         try (InputStream input = Files.newInputStream(path.get())) {
             long size = Files.size(path.get());
             send(player, new PacketTrackBegin(hash, size, 0L, reference.getFormat()));
-            byte[] buffer = new byte[31 * 1024];
+            byte[] buffer = new byte[PacketDownloadChunk.MAX_BYTES];
             int chunkIndex = 0;
+            long offset = 0;
             int count;
             while ((count = input.read(buffer)) >= 0) {
                 if (count == 0) continue;
                 byte[] bytes = Arrays.copyOf(buffer, count);
-                send(player, new PacketDownloadChunk(hash, chunkIndex++, bytes));
+                offset += count;
+                send(player, new PacketDownloadChunk(hash, chunkIndex++, bytes, offset == size));
                 LockSupport.parkNanos(Math.max(1L, count * 1_000_000_000L / ForgeServerConfig.uploadBytesPerSecond));
             }
         } catch (IOException exception) {

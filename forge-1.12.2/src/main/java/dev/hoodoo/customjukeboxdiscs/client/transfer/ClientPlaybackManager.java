@@ -98,7 +98,10 @@ public final class ClientPlaybackManager {
             try {
                 // Check if last chunk
                 Optional<Path> completed = current.append(
-                        packet.getSha256(), packet.getChunkIndex() * 32768L, packet.getBytes(), packet.getBytes().length < 32768);
+                        packet.getSha256(),
+                        packet.getChunkIndex() * (long) PacketDownloadChunk.MAX_BYTES,
+                        packet.getBytes(),
+                        packet.isLast());
                 if (completed.isPresent()) {
                     Minecraft.getMinecraft().addScheduledTask(() -> complete(packet.getSha256(), completed.get()));
                 }
