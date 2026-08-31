@@ -12,11 +12,11 @@ public final class ModBlockEntities {
     public static final DeferredRegister<BlockEntityType<?>> REGISTRAR =
             DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, CustomJukeboxDiscs.MOD_ID);
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<DiscWriterBlockEntity>> DISC_WRITER =
-            REGISTRAR.register("disc_writer", () -> BlockEntityType.Builder.of(
-                    DiscWriterBlockEntity::new, ModBlocks.DISC_WRITER.get()).build(null));
+            REGISTRAR.register("disc_writer", () -> new BlockEntityType<>(
+                    DiscWriterBlockEntity::new, ModBlocks.DISC_WRITER.get()));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<DiscRackBlockEntity>> DISC_RACK =
-            REGISTRAR.register("disc_rack", () -> BlockEntityType.Builder.of(
-                    DiscRackBlockEntity::new, ModBlocks.DISC_RACK.get()).build(null));
+            REGISTRAR.register("disc_rack", () -> new BlockEntityType<>(
+                    DiscRackBlockEntity::new, ModBlocks.DISC_RACK.get()));
 
     private ModBlockEntities() {
     }

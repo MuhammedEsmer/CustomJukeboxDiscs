@@ -79,12 +79,4 @@ public final class AccessPolicyData extends SavedData {
         }
     }
 
-    @Override
-    public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
-        return (CompoundTag) CODEC.encodeStart(NbtOps.INSTANCE, this).getOrThrow();
-    }
-
-    public static AccessPolicyData load(CompoundTag tag, HolderLookup.Provider registries) {
-        return CODEC.parse(NbtOps.INSTANCE, tag).getOrThrow();
-    }
 }

@@ -54,7 +54,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.Level;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.saveddata.SavedDataType;
 import net.minecraft.world.level.storage.LevelResource;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -66,8 +67,12 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 public final class ServerRuntime implements ModPayloads.ServerHandler {
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger("CustomJukeboxDiscs");
     private static final int MAX_QUEUED_DOWNLOADS = 4;
-    private static final String CATALOG_KEY = "customjukeboxdiscs_tracks";
-    private static final String ACCESS_KEY = "customjukeboxdiscs_access";
+    private static final SavedDataType<TrackCatalogData> CATALOG_DATA = new SavedDataType<>(
+            Identifier.fromNamespaceAndPath("customjukeboxdiscs", "tracks"),
+            TrackCatalogData::new, TrackCatalogData.CODEC, DataFixTypes.LEVEL);
+    private static final SavedDataType<AccessPolicyData> ACCESS_DATA = new SavedDataType<>(
+            Identifier.fromNamespaceAndPath("customjukeboxdiscs", "access"),
+            AccessPolicyData::new, AccessPolicyData.CODEC, DataFixTypes.LEVEL);
     private static ServerRuntime instance;
 
     private final UploadManager uploads;
@@ -86,10 +91,8 @@ public final class ServerRuntime implements ModPayloads.ServerHandler {
     private ServerRuntime(MinecraftServer server) {
         this.server = server;
         var storage = server.overworld().getDataStorage();
-        catalog = storage.computeIfAbsent(
-                new SavedData.Factory<>(TrackCatalogData::new, TrackCatalogData::load, DataFixTypes.LEVEL), CATALOG_KEY);
-        AccessPolicyData access = storage.computeIfAbsent(
-                new SavedData.Factory<>(AccessPolicyData::new, AccessPolicyData::load, DataFixTypes.LEVEL), ACCESS_KEY);
+        catalog = storage.computeIfAbsent(CATALOG_DATA);
+        AccessPolicyData access = storage.computeIfAbsent(ACCESS_DATA);
         ioExecutor = Executors.newVirtualThreadPerTaskExecutor();
         uploadIoExecutor = Executors.newSingleThreadExecutor(runnable -> {
             Thread thread = new Thread(runnable, "CustomJukeboxDiscs-UploadIO");

@@ -18,6 +18,8 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public final class DiscRackBlockEntity extends BlockEntity implements Container, MenuProvider {
     private static final int NOTIFY_NEIGHBOURS_AND_CLIENTS = 3;
@@ -32,16 +34,14 @@ public final class DiscRackBlockEntity extends BlockEntity implements Container,
     public void setChanged() {
         super.setChanged();
         // The renderer draws whatever the rack holds, so every client needs the new contents.
-        if (level != null && !level.isClientSide) {
+        if (level != null && !level.isClientSide()) {
             level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), NOTIFY_NEIGHBOURS_AND_CLIENTS);
         }
     }
 
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        CompoundTag tag = new CompoundTag();
-        ContainerHelper.saveAllItems(tag, items, registries);
-        return tag;
+        return saveCustomOnly(registries);
     }
 
     @Override
@@ -50,16 +50,16 @@ public final class DiscRackBlockEntity extends BlockEntity implements Container,
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-        ContainerHelper.saveAllItems(tag, items, registries);
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        ContainerHelper.saveAllItems(output, items);
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
+    protected void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
         items.clear();
-        ContainerHelper.loadAllItems(tag, items, registries);
+        ContainerHelper.loadAllItems(input, items);
     }
 
     @Override

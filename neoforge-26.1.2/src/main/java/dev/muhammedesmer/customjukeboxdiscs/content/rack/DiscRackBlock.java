@@ -6,11 +6,11 @@ import java.util.OptionalInt;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -66,24 +66,24 @@ public final class DiscRackBlock extends BaseEntityBlock {
 
     /** Placing a disc into the slot the player pointed at. */
     @Override
-    protected ItemInteractionResult useItemOn(
+    protected InteractionResult useItemOn(
             ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
             InteractionHand hand, BlockHitResult hit) {
         if (player.isSecondaryUseActive() || !isDisc(stack)) {
-            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
         if (!(level.getBlockEntity(pos) instanceof DiscRackBlockEntity rack)) {
-            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
         OptionalInt slot = hitSlot(state, pos, hit);
         if (slot.isEmpty() || !rack.getItem(slot.getAsInt()).isEmpty()) {
-            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
-        if (!level.isClientSide) {
+        if (!level.isClientSide()) {
             rack.setItem(slot.getAsInt(), stack.split(1));
             level.playSound(null, pos, SoundEvents.BOOK_PUT, SoundSource.BLOCKS, 1.0F, 1.0F);
         }
-        return ItemInteractionResult.sidedSuccess(level.isClientSide);
+        return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER;
     }
 
     /** An empty hand takes the disc that was pointed at; anything else opens the rack. */
@@ -95,22 +95,22 @@ public final class DiscRackBlock extends BaseEntityBlock {
         }
         OptionalInt slot = player.isSecondaryUseActive() ? OptionalInt.empty() : hitSlot(state, pos, hit);
         if (slot.isPresent() && !rack.getItem(slot.getAsInt()).isEmpty()) {
-            if (!level.isClientSide) {
+            if (!level.isClientSide()) {
                 ItemStack taken = rack.removeItem(slot.getAsInt(), 1);
                 if (!player.getInventory().add(taken)) {
                     player.drop(taken, false);
                 }
                 level.playSound(null, pos, SoundEvents.BOOK_PAGE_TURN, SoundSource.BLOCKS, 1.0F, 1.0F);
             }
-            return InteractionResult.sidedSuccess(level.isClientSide);
+            return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER;
         }
-        if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
+        if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
             MenuProvider provider = state.getMenuProvider(level, pos);
             if (provider != null) {
                 serverPlayer.openMenu(provider, pos);
             }
         }
-        return InteractionResult.sidedSuccess(level.isClientSide);
+        return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER;
     }
 
     private static OptionalInt hitSlot(BlockState state, BlockPos pos, BlockHitResult hit) {
@@ -119,14 +119,14 @@ public final class DiscRackBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean moved) {
-        if (!state.is(newState.getBlock()) && level.getBlockEntity(pos) instanceof DiscRackBlockEntity rack) {
+    protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean moved) {
+        if (level.getBlockEntity(pos) instanceof DiscRackBlockEntity rack) {
             for (int slot = 0; slot < rack.getContainerSize(); slot++) {
                 Block.popResource(level, pos, rack.getItem(slot));
             }
             rack.clearContent();
         }
-        super.onRemove(state, level, pos, newState, moved);
+        super.affectNeighborsAfterRemoval(state, level, pos, moved);
     }
 
     @Override
@@ -135,7 +135,7 @@ public final class DiscRackBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
+    protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos, Direction side) {
         if (!(level.getBlockEntity(pos) instanceof DiscRackBlockEntity rack)) {
             return 0;
         }

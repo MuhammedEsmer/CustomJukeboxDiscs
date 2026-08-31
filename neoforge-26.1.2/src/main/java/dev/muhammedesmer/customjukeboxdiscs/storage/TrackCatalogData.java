@@ -98,12 +98,4 @@ public final class TrackCatalogData extends SavedData {
         return tracks.values().stream().mapToLong(TrackMetadata::byteCount).sum();
     }
 
-    @Override
-    public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
-        return (CompoundTag) CODEC.encodeStart(NbtOps.INSTANCE, this).getOrThrow();
-    }
-
-    public static TrackCatalogData load(CompoundTag tag, HolderLookup.Provider registries) {
-        return CODEC.parse(NbtOps.INSTANCE, tag).getOrThrow();
-    }
 }

@@ -16,12 +16,12 @@ import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 
 public final class DiscWriterBlock extends BaseEntityBlock {
     public static final MapCodec<DiscWriterBlock> CODEC = simpleCodec(DiscWriterBlock::new);
-    public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
+    public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
 
     public DiscWriterBlock(Properties properties) {
         super(properties);
@@ -56,12 +56,12 @@ public final class DiscWriterBlock extends BaseEntityBlock {
     @Override
     protected InteractionResult useWithoutItem(
             BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
+        if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
             MenuProvider provider = state.getMenuProvider(level, pos);
             if (provider != null) {
                 serverPlayer.openMenu(provider, pos);
             }
         }
-        return InteractionResult.sidedSuccess(level.isClientSide);
+        return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER;
     }
 }
