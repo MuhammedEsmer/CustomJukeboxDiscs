@@ -1,6 +1,5 @@
 package dev.muhammedesmer.customjukeboxdiscs.gametest;
 
-import dev.muhammedesmer.customjukeboxdiscs.CustomJukeboxDiscs;
 import dev.muhammedesmer.customjukeboxdiscs.content.ModBlocks;
 import dev.muhammedesmer.customjukeboxdiscs.content.ModDataComponents;
 import dev.muhammedesmer.customjukeboxdiscs.content.ModItems;
@@ -9,22 +8,17 @@ import dev.muhammedesmer.customjukeboxdiscs.content.disc.TrackReference;
 import dev.muhammedesmer.customjukeboxdiscs.content.writer.DiscWriterBlockEntity;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
-import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.gametest.GameTestHolder;
-import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
+import net.minecraft.world.level.storage.TagValueInput;
 
-@GameTestHolder(CustomJukeboxDiscs.MOD_ID)
-@PrefixGameTestTemplate(false)
 public final class DiscWriterGameTests {
-    private static final String EMPTY = "empty";
     private static final BlockPos WRITER = new BlockPos(1, 1, 1);
 
     private DiscWriterGameTests() {
     }
 
-    @GameTest(template = EMPTY)
     public static void writingTurnsOneBlankDiscIntoAProgrammedDisc(GameTestHelper helper) {
         DiscWriterBlockEntity writer = placeWriter(helper);
         writer.setItem(0, new ItemStack(ModItems.BLANK_DISC.get()));
@@ -39,7 +33,6 @@ public final class DiscWriterGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = EMPTY)
     public static void writingIsRejectedWithoutABlankDisc(GameTestHelper helper) {
         DiscWriterBlockEntity writer = placeWriter(helper);
 
@@ -48,7 +41,6 @@ public final class DiscWriterGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = EMPTY)
     public static void writingIsRejectedWhenTheInputChanged(GameTestHelper helper) {
         DiscWriterBlockEntity writer = placeWriter(helper);
         writer.setItem(0, new ItemStack(ModItems.BLANK_DISC.get()));
@@ -61,7 +53,6 @@ public final class DiscWriterGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = EMPTY)
     public static void writingIsRejectedForAnAlreadyProgrammedDisc(GameTestHelper helper) {
         DiscWriterBlockEntity writer = placeWriter(helper);
         ItemStack programmed = new ItemStack(ModItems.PROGRAMMED_DISC.get());
@@ -72,7 +63,6 @@ public final class DiscWriterGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = EMPTY)
     public static void writtenDiscSurvivesBlockEntityReload(GameTestHelper helper) {
         DiscWriterBlockEntity writer = placeWriter(helper);
         writer.setItem(0, new ItemStack(ModItems.BLANK_DISC.get()));
@@ -82,7 +72,8 @@ public final class DiscWriterGameTests {
         var saved = writer.saveWithFullMetadata(helper.getLevel().registryAccess());
         DiscWriterBlockEntity reloaded = new DiscWriterBlockEntity(
                 helper.absolutePos(WRITER), ModBlocks.DISC_WRITER.get().defaultBlockState());
-        reloaded.loadWithComponents(saved, helper.getLevel().registryAccess());
+        reloaded.loadWithComponents(TagValueInput.create(
+                ProblemReporter.DISCARDING, helper.getLevel().registryAccess(), saved));
 
         helper.assertValueEqual(
                 reloaded.getItem(0).get(ModDataComponents.TRACK_REFERENCE), track, "persisted track reference");
@@ -91,7 +82,7 @@ public final class DiscWriterGameTests {
 
     private static DiscWriterBlockEntity placeWriter(GameTestHelper helper) {
         helper.setBlock(WRITER, ModBlocks.DISC_WRITER.get());
-        return helper.getBlockEntity(WRITER);
+        return helper.getBlockEntity(WRITER, DiscWriterBlockEntity.class);
     }
 
     private static TrackReference track() {

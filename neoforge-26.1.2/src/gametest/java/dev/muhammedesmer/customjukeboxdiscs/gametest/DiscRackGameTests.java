@@ -1,6 +1,5 @@
 package dev.muhammedesmer.customjukeboxdiscs.gametest;
 
-import dev.muhammedesmer.customjukeboxdiscs.CustomJukeboxDiscs;
 import dev.muhammedesmer.customjukeboxdiscs.content.ModBlocks;
 import dev.muhammedesmer.customjukeboxdiscs.content.ModDataComponents;
 import dev.muhammedesmer.customjukeboxdiscs.content.ModItems;
@@ -10,24 +9,20 @@ import dev.muhammedesmer.customjukeboxdiscs.content.rack.DiscRackBlockEntity;
 import dev.muhammedesmer.customjukeboxdiscs.content.rack.RackSlots;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
-import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.core.Direction;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
-import net.neoforged.neoforge.gametest.GameTestHolder;
-import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
+import net.minecraft.world.level.storage.TagValueInput;
 
-@GameTestHolder(CustomJukeboxDiscs.MOD_ID)
-@PrefixGameTestTemplate(false)
 public final class DiscRackGameTests {
-    private static final String EMPTY = "empty";
     private static final BlockPos RACK = new BlockPos(1, 1, 1);
 
     private DiscRackGameTests() {
     }
 
-    @GameTest(template = EMPTY)
     public static void rackHoldsNineDiscs(GameTestHelper helper) {
         DiscRackBlockEntity rack = placeRack(helper);
 
@@ -39,7 +34,6 @@ public final class DiscRackGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = EMPTY)
     public static void rackOnlyAcceptsDiscs(GameTestHelper helper) {
         DiscRackBlockEntity rack = placeRack(helper);
 
@@ -49,7 +43,6 @@ public final class DiscRackGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = EMPTY)
     public static void occupiedSlotRefusesASecondDisc(GameTestHelper helper) {
         DiscRackBlockEntity rack = placeRack(helper);
         rack.setItem(0, programmedDisc());
@@ -58,23 +51,21 @@ public final class DiscRackGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = EMPTY)
     public static void comparatorFollowsHowFullTheRackIs(GameTestHelper helper) {
         DiscRackBlockEntity rack = placeRack(helper);
         var level = helper.getLevel();
         BlockPos absolute = helper.absolutePos(RACK);
 
         helper.assertValueEqual(level.getBlockState(absolute)
-                .getAnalogOutputSignal(level, absolute), 0, "empty rack signal");
+                .getAnalogOutputSignal(level, absolute, Direction.UP), 0, "empty rack signal");
         for (int slot = 0; slot < RackSlots.SIZE; slot++) {
             rack.setItem(slot, programmedDisc());
         }
         helper.assertValueEqual(level.getBlockState(absolute)
-                .getAnalogOutputSignal(level, absolute), 15, "full rack signal");
+                .getAnalogOutputSignal(level, absolute, Direction.UP), 15, "full rack signal");
         helper.succeed();
     }
 
-    @GameTest(template = EMPTY)
     public static void rackKeepsItsDiscsAcrossReload(GameTestHelper helper) {
         DiscRackBlockEntity rack = placeRack(helper);
         TrackReference track = track();
@@ -85,7 +76,8 @@ public final class DiscRackGameTests {
         var saved = rack.saveWithFullMetadata(helper.getLevel().registryAccess());
         DiscRackBlockEntity reloaded = new DiscRackBlockEntity(
                 helper.absolutePos(RACK), ModBlocks.DISC_RACK.get().defaultBlockState());
-        reloaded.loadWithComponents(saved, helper.getLevel().registryAccess());
+        reloaded.loadWithComponents(TagValueInput.create(
+                ProblemReporter.DISCARDING, helper.getLevel().registryAccess(), saved));
 
         helper.assertValueEqual(
                 reloaded.getItem(4).get(ModDataComponents.TRACK_REFERENCE), track, "persisted track");
@@ -94,7 +86,7 @@ public final class DiscRackGameTests {
 
     private static DiscRackBlockEntity placeRack(GameTestHelper helper) {
         helper.setBlock(RACK, ModBlocks.DISC_RACK.get());
-        return helper.getBlockEntity(RACK);
+        return helper.getBlockEntity(RACK, DiscRackBlockEntity.class);
     }
 
     private static ItemStack programmedDisc() {
