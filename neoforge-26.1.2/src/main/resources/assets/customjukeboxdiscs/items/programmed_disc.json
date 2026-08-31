@@ -1,0 +1,23 @@
+{
+  "model": {
+    "type": "minecraft:range_dispatch",
+    "property": "customjukeboxdiscs:disc_variant",
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "customjukeboxdiscs:item/programmed_disc_0"
+    },
+    "entries": [
+      { "threshold": 1, "model": { "type": "minecraft:model", "model": "customjukeboxdiscs:item/programmed_disc_1" } },
+      { "threshold": 2, "model": { "type": "minecraft:model", "model": "customjukeboxdiscs:item/programmed_disc_2" } },
+      { "threshold": 3, "model": { "type": "minecraft:model", "model": "customjukeboxdiscs:item/programmed_disc_3" } },
+      { "threshold": 4, "model": { "type": "minecraft:model", "model": "customjukeboxdiscs:item/programmed_disc_4" } },
+      { "threshold": 5, "model": { "type": "minecraft:model", "model": "customjukeboxdiscs:item/programmed_disc_5" } },
+      { "threshold": 6, "model": { "type": "minecraft:model", "model": "customjukeboxdiscs:item/programmed_disc_6" } },
+      { "threshold": 7, "model": { "type": "minecraft:model", "model": "customjukeboxdiscs:item/programmed_disc_7" } },
+      { "threshold": 8, "model": { "type": "minecraft:model", "model": "customjukeboxdiscs:item/programmed_disc_8" } },
+      { "threshold": 9, "model": { "type": "minecraft:model", "model": "customjukeboxdiscs:item/programmed_disc_9" } },
+      { "threshold": 10, "model": { "type": "minecraft:model", "model": "customjukeboxdiscs:item/programmed_disc_10" } },
+      { "threshold": 11, "model": { "type": "minecraft:model", "model": "customjukeboxdiscs:item/programmed_disc_11" } }
+    ]
+  }
+}

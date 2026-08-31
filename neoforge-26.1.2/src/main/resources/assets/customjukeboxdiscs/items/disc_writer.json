@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "customjukeboxdiscs:item/disc_writer"
+  }
+}
