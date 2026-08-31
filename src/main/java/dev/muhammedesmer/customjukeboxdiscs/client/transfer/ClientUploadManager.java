@@ -13,6 +13,8 @@ import dev.muhammedesmer.customjukeboxdiscs.network.payload.JukeboxPlay;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.JukeboxStop;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.TrackBegin;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.TrackUnavailable;
+import dev.muhammedesmer.customjukeboxdiscs.network.payload.LibraryPageResponse;
+import dev.muhammedesmer.customjukeboxdiscs.network.payload.LibraryWriteResponse;
 import dev.muhammedesmer.customjukeboxdiscs.transfer.UploadError;
 import java.io.IOException;
 import java.io.InputStream;
@@ -140,6 +142,8 @@ public final class ClientUploadManager implements ModPayloads.ClientHandler {
     @Override public void handle(TrackBegin payload, IPayloadContext context) { context.enqueueWork(() -> ClientPlaybackManager.INSTANCE.begin(payload)); }
     @Override public void handle(DownloadChunk payload, IPayloadContext context) { context.enqueueWork(() -> ClientPlaybackManager.INSTANCE.chunk(payload)); }
     @Override public void handle(TrackUnavailable payload, IPayloadContext context) { context.enqueueWork(() -> ClientPlaybackManager.INSTANCE.unavailable(payload)); }
+    @Override public void handle(LibraryPageResponse payload, IPayloadContext context) { ClientLibraryManager.INSTANCE.handle(payload); }
+    @Override public void handle(LibraryWriteResponse payload, IPayloadContext context) { ClientLibraryManager.INSTANCE.handle(payload); }
 
     /** Re-asks the server after a delay while another player's upload is going first. */
     private void scheduleQueueRetry(Pending current) {
