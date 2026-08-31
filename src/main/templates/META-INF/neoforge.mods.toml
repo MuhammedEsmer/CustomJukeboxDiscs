@@ -49,7 +49,7 @@ logoFile="logo.png"
 #credits="" #optional
 
 # The authors of the mod, displayed in the mod UI (optional)
-authors="Muhammed Esmer"
+authors="${mod_authors}"
 
 # The description text for the mod (multi line!) (#mandatory)
 description='''

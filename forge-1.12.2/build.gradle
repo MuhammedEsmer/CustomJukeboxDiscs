@@ -12,7 +12,8 @@ apply plugin: 'java'
 apply plugin: 'net.minecraftforge.gradle'
 
 group = property('mod_group')
-version = "${property('minecraft_version')}-${property('mod_version')}"
+version = property('mod_version')
+archivesBaseName = "${property('mod_id')}-${property('minecraft_version')}"
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(8)
 compileJava {
@@ -95,6 +96,16 @@ jar {
         rename { 'en_US.lang' }
     }
 }
+
+// Preserve every published build outside build/ so `clean` cannot remove old releases.
+task archiveRelease(type: Copy) {
+    dependsOn jar
+    from jar
+    into new File(rootProject.projectDir.parentFile, 'releases')
+    outputs.upToDateWhen { false }
+}
+
+build.finalizedBy archiveRelease
 
 test {
     useJUnitPlatform()
