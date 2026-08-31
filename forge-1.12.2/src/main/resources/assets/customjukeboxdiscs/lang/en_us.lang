@@ -23,13 +23,20 @@ screen.customjukeboxdiscs.disc_writer.url=Link
 screen.customjukeboxdiscs.disc_writer.url_hint=https link to an audio file
 
 upload.customjukeboxdiscs.busy=Another upload is active
-upload.customjukeboxdiscs.complete=Disc programmed
+upload.customjukeboxdiscs.complete=Upload complete
 upload.customjukeboxdiscs.failed=Upload failed: %s
 upload.customjukeboxdiscs.hashing=Preparing...
-upload.customjukeboxdiscs.progress=Uploading %s%%
-upload.customjukeboxdiscs.read_failed=Could not read the audio file
+upload.customjukeboxdiscs.progress=Uploading: %s%%
+upload.customjukeboxdiscs.read_failed=File unreadable
 upload.customjukeboxdiscs.fetching=Downloading link...
-upload.customjukeboxdiscs.queued=Waiting in the queue, someone else is uploading...
+upload.customjukeboxdiscs.queued=Upload queued
+screen.customjukeboxdiscs.disc_writer.local_files=Local Files
+screen.customjukeboxdiscs.disc_writer.server_library=Server Library
+screen.customjukeboxdiscs.disc_writer.library_loading=Loading library...
+screen.customjukeboxdiscs.disc_writer.library_empty=Library is empty
+screen.customjukeboxdiscs.disc_writer.disc_written=Disc written
+screen.customjukeboxdiscs.disc_writer.insert_blank=Insert a blank disc
+screen.customjukeboxdiscs.disc_writer.track_unavailable=Track unavailable
 
 command.customjukeboxdiscs.access_updated=Updated access for %s player(s)
 command.customjukeboxdiscs.mode_set=Access mode set to %s
