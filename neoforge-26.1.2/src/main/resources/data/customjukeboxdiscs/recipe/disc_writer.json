@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["IRI", "RJR", "IRI"],
+  "key": {
+    "I": { "item": "minecraft:iron_ingot" },
+    "R": { "item": "minecraft:redstone" },
+    "J": { "item": "minecraft:jukebox" }
+  },
+  "result": { "id": "customjukeboxdiscs:disc_writer", "count": 1 }
+}

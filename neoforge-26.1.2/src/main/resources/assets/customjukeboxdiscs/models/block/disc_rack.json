@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "top": "customjukeboxdiscs:block/disc_rack_top",
+    "front": "customjukeboxdiscs:block/disc_rack_front",
+    "side": "customjukeboxdiscs:block/disc_rack_side"
+  }
+}
