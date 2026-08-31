@@ -14,6 +14,10 @@ import dev.hoodoo.customjukeboxdiscs.network.packet.PacketUploadChunk;
 import dev.hoodoo.customjukeboxdiscs.network.packet.PacketUploadFinish;
 import dev.hoodoo.customjukeboxdiscs.network.packet.PacketUploadResult;
 import dev.hoodoo.customjukeboxdiscs.network.packet.PacketUrlUploadRequest;
+import dev.hoodoo.customjukeboxdiscs.network.packet.PacketLibraryPageRequest;
+import dev.hoodoo.customjukeboxdiscs.network.packet.PacketLibraryPageResponse;
+import dev.hoodoo.customjukeboxdiscs.network.packet.PacketLibraryWriteRequest;
+import dev.hoodoo.customjukeboxdiscs.network.packet.PacketLibraryWriteResponse;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.relauncher.Side;
@@ -39,5 +43,9 @@ public final class ModNetwork {
         CHANNEL.registerMessage(PacketJukeboxPlay.Handler.class, PacketJukeboxPlay.class, nextId++, Side.CLIENT);
         CHANNEL.registerMessage(PacketJukeboxStop.Handler.class, PacketJukeboxStop.class, nextId++, Side.CLIENT);
         CHANNEL.registerMessage(PacketPlaybackPreference.Handler.class, PacketPlaybackPreference.class, nextId++, Side.SERVER);
+        CHANNEL.registerMessage(PacketLibraryPageRequest.Handler.class, PacketLibraryPageRequest.class, nextId++, Side.SERVER);
+        CHANNEL.registerMessage(PacketLibraryPageResponse.Handler.class, PacketLibraryPageResponse.class, nextId++, Side.CLIENT);
+        CHANNEL.registerMessage(PacketLibraryWriteRequest.Handler.class, PacketLibraryWriteRequest.class, nextId++, Side.SERVER);
+        CHANNEL.registerMessage(PacketLibraryWriteResponse.Handler.class, PacketLibraryWriteResponse.class, nextId++, Side.CLIENT);
     }
 }

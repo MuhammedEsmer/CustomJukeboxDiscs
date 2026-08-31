@@ -9,6 +9,8 @@ import dev.hoodoo.customjukeboxdiscs.network.PlaybackAnchor;
 import dev.hoodoo.customjukeboxdiscs.network.packet.PacketDownloadChunk;
 import dev.hoodoo.customjukeboxdiscs.network.packet.PacketJukeboxPlay;
 import dev.hoodoo.customjukeboxdiscs.network.packet.PacketJukeboxStop;
+import dev.hoodoo.customjukeboxdiscs.network.packet.PacketLibraryPageResponse;
+import dev.hoodoo.customjukeboxdiscs.network.packet.PacketLibraryWriteResponse;
 import dev.hoodoo.customjukeboxdiscs.network.packet.PacketTrackBegin;
 import dev.hoodoo.customjukeboxdiscs.network.packet.PacketTrackUnavailable;
 import dev.hoodoo.customjukeboxdiscs.network.packet.PacketUploadBegin;
@@ -40,6 +42,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -350,6 +353,36 @@ public final class ServerRuntime {
                 send(player, new PacketTrackUnavailable(sha256));
                 break;
         }
+    }
+
+    public void handleLibraryPage(EntityPlayerMP player, int requestedPage) {
+        if (!(player.openContainer instanceof ContainerDiscWriter)) return;
+        TrackCatalogSavedData.CatalogPage page = catalog.pageClamped(requestedPage, PacketLibraryPageResponse.MAX_TRACKS);
+        List<TrackReference> tracks = page.entries().stream()
+                .map(TrackMetadata::reference).collect(java.util.stream.Collectors.toList());
+        send(player, new PacketLibraryPageResponse(page.page(), page.pageCount(), page.totalTracks(), tracks));
+    }
+
+    public void handleLibraryWrite(EntityPlayerMP player, String sha256, long inputFingerprint) {
+        if (!(player.openContainer instanceof ContainerDiscWriter)) {
+            send(player, new PacketLibraryWriteResponse(PacketLibraryWriteResponse.Result.INVALID_WRITER));
+            return;
+        }
+        ContainerDiscWriter menu = (ContainerDiscWriter) player.openContainer;
+        TileEntityDiscWriter writer = menu.getWriter();
+        Optional<TrackMetadata> metadata = catalog.find(sha256);
+        if (!metadata.isPresent() || !trackStorage.find(
+                metadata.get().reference().sha256(), metadata.get().reference().format()).isPresent()) {
+            send(player, new PacketLibraryWriteResponse(PacketLibraryWriteResponse.Result.TRACK_UNAVAILABLE));
+            return;
+        }
+        if (!writer.isUsableByPlayer(player) || !writer.writeDisc(inputFingerprint, metadata.get().reference())) {
+            send(player, new PacketLibraryWriteResponse(PacketLibraryWriteResponse.Result.INVALID_WRITER));
+            return;
+        }
+        menu.detectAndSendChanges();
+        player.sendContainerToPlayer(menu);
+        send(player, new PacketLibraryWriteResponse(PacketLibraryWriteResponse.Result.WRITTEN));
     }
 
     private void startSend(EntityPlayerMP player, TrackReference reference) {
