@@ -82,7 +82,7 @@ public final class DynamicTrackSound extends AbstractTickableSoundInstance {
     public WeighedSoundEvents resolve(SoundManager manager) {
         // Same volume and attenuation distance a vanilla record uses, so the falloff curve and the
         // RECORDS slider behave identically: 4 x 16 gives the usual 64 block range.
-        sound = new Sound(location, ConstantFloat.of(4.0F), ConstantFloat.of(1.0F), 1,
+        sound = new Sound(identifier, ConstantFloat.of(4.0F), ConstantFloat.of(1.0F), 1,
                 Sound.Type.FILE, true, false, 16);
         return SoundManager.INTENTIONALLY_EMPTY_SOUND_EVENT;
     }

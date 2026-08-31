@@ -16,11 +16,14 @@ import org.lwjgl.glfw.GLFW;
 
 @EventBusSubscriber(modid = CustomJukeboxDiscs.MOD_ID, value = Dist.CLIENT)
 public final class ClientGameEvents {
+    public static final KeyMapping.Category CATEGORY = new KeyMapping.Category(
+            net.minecraft.resources.Identifier.fromNamespaceAndPath(
+                    CustomJukeboxDiscs.MOD_ID, "custom_jukebox_discs"));
     public static final KeyMapping TOGGLE_PLAYBACK = new KeyMapping(
             "key.customjukeboxdiscs.toggle_playback",
             InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_J,
-            "key.categories.customjukeboxdiscs");
+            CATEGORY);
 
     private static ResourceKey<Level> lastDimension;
 

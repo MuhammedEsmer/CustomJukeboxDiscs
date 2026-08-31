@@ -3,35 +3,67 @@ package dev.muhammedesmer.customjukeboxdiscs.client.render;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.muhammedesmer.customjukeboxdiscs.content.rack.DiscRackBlockEntity;
 import dev.muhammedesmer.customjukeboxdiscs.content.rack.RackSlots;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.item.ItemModelResolver;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Draws the discs a rack holds on its front face, so their colours are readable without opening it.
  */
-public final class DiscRackRenderer implements BlockEntityRenderer<DiscRackBlockEntity> {
+public final class DiscRackRenderer implements BlockEntityRenderer<DiscRackBlockEntity, DiscRackRenderState> {
     private static final float CELL = 1.0F / 3.0F;
     private static final float DISC_SCALE = 0.26F;
     private static final float FRONT_DEPTH = 0.001F;
+    private final ItemModelResolver itemModelResolver;
 
     public DiscRackRenderer(BlockEntityRendererProvider.Context context) {
+        this.itemModelResolver = context.itemModelResolver();
     }
 
     @Override
-    public void render(
-            DiscRackBlockEntity rack, float partialTick, PoseStack poses,
-            MultiBufferSource buffers, int light, int overlay) {
-        Direction facing = rack.getBlockState().getValue(HorizontalDirectionalBlock.FACING);
+    public DiscRackRenderState createRenderState() {
+        return new DiscRackRenderState();
+    }
+
+    @Override
+    public void extractRenderState(
+            DiscRackBlockEntity rack, DiscRackRenderState state, float partialTick,
+            Vec3 cameraPosition, ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
+        BlockEntityRenderer.super.extractRenderState(rack, state, partialTick, cameraPosition, breakProgress);
+        state.facing = rack.getBlockState().getValue(HorizontalDirectionalBlock.FACING);
+        int seed = (int) rack.getBlockPos().asLong();
         for (int slot = 0; slot < RackSlots.SIZE; slot++) {
             ItemStack stack = rack.getItem(slot);
             if (stack.isEmpty()) {
+                state.items[slot] = null;
+                continue;
+            }
+            ItemStackRenderState itemState = new ItemStackRenderState();
+            itemModelResolver.updateForTopItem(
+                    itemState, stack, ItemDisplayContext.FIXED, rack.getLevel(), null, seed + slot);
+            state.items[slot] = itemState;
+        }
+    }
+
+    @Override
+    public void submit(
+            DiscRackRenderState state, PoseStack poses,
+            SubmitNodeCollector submitNodeCollector, CameraRenderState camera) {
+        Direction facing = state.facing;
+        for (int slot = 0; slot < RackSlots.SIZE; slot++) {
+            ItemStackRenderState itemState = state.items[slot];
+            if (itemState == null || itemState.isEmpty()) {
                 continue;
             }
             poses.pushPose();
@@ -43,9 +75,7 @@ public final class DiscRackRenderer implements BlockEntityRenderer<DiscRackBlock
             float up = 0.5F - (RackSlots.row(slot) + 0.5F) * CELL;
             poses.translate(across, up, 0.5F + FRONT_DEPTH);
             poses.scale(DISC_SCALE, DISC_SCALE, DISC_SCALE);
-            Minecraft.getInstance().getItemRenderer().renderStatic(
-                    stack, ItemDisplayContext.FIXED, light, OverlayTexture.NO_OVERLAY,
-                    poses, buffers, rack.getLevel(), (int) rack.getBlockPos().asLong() + slot);
+            itemState.submit(poses, submitNodeCollector, state.lightCoords, OverlayTexture.NO_OVERLAY, slot);
             poses.popPose();
         }
     }

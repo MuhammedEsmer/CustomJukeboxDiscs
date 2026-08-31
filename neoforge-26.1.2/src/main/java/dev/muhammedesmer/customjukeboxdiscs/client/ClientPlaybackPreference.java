@@ -32,9 +32,9 @@ public final class ClientPlaybackPreference {
         publish();
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.player != null) {
-            minecraft.player.displayClientMessage(Component.translatable(nowEnabled
+            minecraft.player.sendOverlayMessage(Component.translatable(nowEnabled
                     ? "playback.customjukeboxdiscs.enabled"
-                    : "playback.customjukeboxdiscs.disabled"), true);
+                    : "playback.customjukeboxdiscs.disabled"));
         }
     }
 }

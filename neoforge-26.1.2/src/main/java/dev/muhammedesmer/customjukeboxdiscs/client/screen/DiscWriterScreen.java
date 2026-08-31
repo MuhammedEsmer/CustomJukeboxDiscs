@@ -13,9 +13,12 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -59,9 +62,7 @@ public final class DiscWriterScreen extends AbstractContainerScreen<DiscWriterMe
     private Button nextButton;
 
     public DiscWriterScreen(DiscWriterMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title);
-        imageWidth = 192;
-        imageHeight = 254;
+        super(menu, inventory, title, 192, 254);
         inventoryLabelY = 161;
     }
 
@@ -205,8 +206,8 @@ public final class DiscWriterScreen extends AbstractContainerScreen<DiscWriterMe
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        int row = rowAt(mouseX, mouseY);
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        int row = rowAt(event.x(), event.y());
         int size = serverLibrary ? libraryTracks.size() : files.size();
         if (row >= 0 && row + scroll < size) {
             selected = row + scroll;
@@ -216,7 +217,7 @@ public final class DiscWriterScreen extends AbstractContainerScreen<DiscWriterMe
             }
             return true;
         }
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(event, doubleClick);
     }
 
     @Override
@@ -238,15 +239,17 @@ public final class DiscWriterScreen extends AbstractContainerScreen<DiscWriterMe
     }
 
     @Override
-    protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
-        graphics.blit(BACKGROUND, leftPos, topPos, 0, 0, imageWidth, imageHeight, TEXTURE_SIZE, TEXTURE_SIZE);
+    public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+        super.extractBackground(graphics, mouseX, mouseY, partialTick);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, BACKGROUND,
+                leftPos, topPos, 0, 0, imageWidth, imageHeight, TEXTURE_SIZE, TEXTURE_SIZE);
         if (serverLibrary) renderLibrary(graphics); else renderFileList(graphics);
         renderProgress(graphics);
     }
 
-    private void renderLibrary(GuiGraphics graphics) {
+    private void renderLibrary(GuiGraphicsExtractor graphics) {
         if (libraryTracks.isEmpty()) {
-            graphics.drawString(font, Component.translatable("screen.customjukeboxdiscs.disc_writer.library_empty"),
+            graphics.text(font, Component.translatable("screen.customjukeboxdiscs.disc_writer.library_empty"),
                     leftPos + LIST_X + 3, topPos + LIST_Y + 4, 0x686868, false);
             return;
         }
@@ -256,11 +259,11 @@ public final class DiscWriterScreen extends AbstractContainerScreen<DiscWriterMe
             int y = topPos + LIST_Y + row * LIBRARY_ROW_HEIGHT;
             if (index == selected) graphics.fill(leftPos + LIST_X, y, leftPos + LIST_X + LIST_WIDTH, y + 21, 0xFF8B6B34);
             int color = index == selected ? 0xFFFFFF : 0x3F3528;
-            graphics.drawString(font, font.plainSubstrByWidth(track.title(), LIST_WIDTH - 6),
+            graphics.text(font, font.plainSubstrByWidth(track.title(), LIST_WIDTH - 6),
                     leftPos + LIST_X + 3, y + 2, color, false);
             String details = track.uploaderName() + " · " + duration(track.durationMillis()) + " · "
                     + track.format().serializedName().toUpperCase(java.util.Locale.ROOT);
-            graphics.drawString(font, font.plainSubstrByWidth(details, LIST_WIDTH - 6),
+            graphics.text(font, font.plainSubstrByWidth(details, LIST_WIDTH - 6),
                     leftPos + LIST_X + 3, y + 12, index == selected ? 0xF0DFC1 : 0x776A58, false);
         }
     }
@@ -292,9 +295,9 @@ public final class DiscWriterScreen extends AbstractContainerScreen<DiscWriterMe
         }
     }
 
-    private void renderFileList(GuiGraphics graphics) {
+    private void renderFileList(GuiGraphicsExtractor graphics) {
         if (files.isEmpty()) {
-            graphics.drawString(font, Component.translatable("screen.customjukeboxdiscs.disc_writer.no_files"),
+            graphics.text(font, Component.translatable("screen.customjukeboxdiscs.disc_writer.no_files"),
                     leftPos + LIST_X + 3, topPos + LIST_Y + 4, 0x808080, false);
             return;
         }
@@ -305,12 +308,12 @@ public final class DiscWriterScreen extends AbstractContainerScreen<DiscWriterMe
                 graphics.fill(leftPos + LIST_X, y, leftPos + LIST_X + LIST_WIDTH - 2, y + ROW_HEIGHT - 1, 0xFF4A6E9C);
             }
             String name = files.get(index).getFileName().toString();
-            graphics.drawString(font, font.plainSubstrByWidth(name, LIST_WIDTH - 8),
+            graphics.text(font, font.plainSubstrByWidth(name, LIST_WIDTH - 8),
                     leftPos + LIST_X + 3, y + 3, index == selected ? 0xFFFFFF : 0x404040, false);
         }
     }
 
-    private void renderProgress(GuiGraphics graphics) {
+    private void renderProgress(GuiGraphicsExtractor graphics) {
         if (serverLibrary || progress <= 0.0F) {
             return;
         }
@@ -320,37 +323,30 @@ public final class DiscWriterScreen extends AbstractContainerScreen<DiscWriterMe
     }
 
     @Override
-    protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.drawString(font, Component.translatable("screen.customjukeboxdiscs.disc_writer.slot"),
+    protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        graphics.text(font, Component.translatable("screen.customjukeboxdiscs.disc_writer.slot"),
                 160, 15, 0x404040, false);
-        graphics.drawString(font, playerInventoryTitle, LIST_X, inventoryLabelY, 0x404040, false);
+        graphics.text(font, playerInventoryTitle, LIST_X, inventoryLabelY, 0x404040, false);
         int statusX = serverLibrary ? 48 : LIST_X;
         int statusY = serverLibrary ? 132 : 114;
         if (serverLibrary) {
-            graphics.drawString(font, libraryPage + "/" + libraryPageCount, LIST_X, statusY, 0x5A4935, false);
+            graphics.text(font, libraryPage + "/" + libraryPageCount, LIST_X, statusY, 0x5A4935, false);
         }
         if (status.getString().isEmpty()) {
             return;
         }
-        graphics.drawString(font, font.plainSubstrByWidth(status.getString(), imageWidth - statusX - 8),
+        graphics.text(font, font.plainSubstrByWidth(status.getString(), imageWidth - statusX - 8),
                 statusX, statusY, 0x404040, false);
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        renderBackground(graphics, mouseX, mouseY, partialTick);
-        super.render(graphics, mouseX, mouseY, partialTick);
-        renderTooltip(graphics, mouseX, mouseY);
-    }
-
-    @Override
-    public boolean keyPressed(int key, int scanCode, int modifiers) {
-        if ((titleBox.isFocused() || urlBox.isFocused()) && key != 256) {
-            return titleBox.keyPressed(key, scanCode, modifiers)
-                    || urlBox.keyPressed(key, scanCode, modifiers)
-                    || super.keyPressed(key, scanCode, modifiers);
+    public boolean keyPressed(KeyEvent event) {
+        if ((titleBox.isFocused() || urlBox.isFocused()) && event.key() != 256) {
+            return titleBox.keyPressed(event)
+                    || urlBox.keyPressed(event)
+                    || super.keyPressed(event);
         }
-        return super.keyPressed(key, scanCode, modifiers);
+        return super.keyPressed(event);
     }
 
     @Override

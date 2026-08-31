@@ -1,7 +1,8 @@
 package dev.muhammedesmer.customjukeboxdiscs.client.screen;
 
 import dev.muhammedesmer.customjukeboxdiscs.content.rack.DiscRackMenu;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -23,14 +24,9 @@ public final class DiscRackScreen extends AbstractContainerScreen<DiscRackMenu> 
     }
 
     @Override
-    protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
-        graphics.blit(BACKGROUND, leftPos, topPos, 0, 0, imageWidth, imageHeight);
-    }
-
-    @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        renderBackground(graphics, mouseX, mouseY, partialTick);
-        super.render(graphics, mouseX, mouseY, partialTick);
-        renderTooltip(graphics, mouseX, mouseY);
+    public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+        super.extractBackground(graphics, mouseX, mouseY, partialTick);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, BACKGROUND,
+                leftPos, topPos, 0, 0, imageWidth, imageHeight, 256, 256);
     }
 }
