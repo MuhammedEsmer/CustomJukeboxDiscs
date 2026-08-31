@@ -4,6 +4,16 @@ All notable changes to Custom Jukebox Discs. Versions follow [semantic versionin
 1.0.0 is reserved for the first release considered feature complete. Per-version notes for uploading
 live in `docs/changelogs/`.
 
+## 0.2.8
+
+### Added
+
+- Native NeoForge build for Minecraft 26.1.2, suitable for All the Mods 11.
+
+### Changed
+
+- Re-released the NeoForge 1.21.1 build after correcting its CurseForge file listing.
+
 ## 0.2.7
 
 ### Changed
