@@ -72,6 +72,12 @@ public final class TrackCatalogData extends SavedData {
         return new CatalogPage(page, pageCount, ordered.size(), ordered.subList(from, to));
     }
 
+    public CatalogPage pageClamped(int requestedPage, int pageSize) {
+        if (pageSize < 1) throw new IllegalArgumentException("pageSize must be positive");
+        int pageCount = Math.max(1, (tracks.size() + pageSize - 1) / pageSize);
+        return page(Math.max(1, Math.min(requestedPage, pageCount)), pageSize);
+    }
+
     public record CatalogPage(int page, int pageCount, int totalTracks, List<TrackMetadata> entries) {
     }
 

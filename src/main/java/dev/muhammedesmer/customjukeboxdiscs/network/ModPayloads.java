@@ -1,5 +1,9 @@
 package dev.muhammedesmer.customjukeboxdiscs.network;
 
+import dev.muhammedesmer.customjukeboxdiscs.network.payload.LibraryPageRequest;
+import dev.muhammedesmer.customjukeboxdiscs.network.payload.LibraryPageResponse;
+import dev.muhammedesmer.customjukeboxdiscs.network.payload.LibraryWriteRequest;
+import dev.muhammedesmer.customjukeboxdiscs.network.payload.LibraryWriteResponse;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.UploadBeginRequest;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.UploadBeginResponse;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.UploadChunk;
@@ -48,6 +52,10 @@ public final class ModPayloads {
                 (payload, context) -> serverHandler.handle(payload, context));
         registrar.playToServer(UrlUploadRequest.TYPE, UrlUploadRequest.STREAM_CODEC,
                 (payload, context) -> serverHandler.handle(payload, context));
+        registrar.playToServer(LibraryPageRequest.TYPE, LibraryPageRequest.STREAM_CODEC,
+                (payload, context) -> serverHandler.handle(payload, context));
+        registrar.playToServer(LibraryWriteRequest.TYPE, LibraryWriteRequest.STREAM_CODEC,
+                (payload, context) -> serverHandler.handle(payload, context));
         registrar.playToClient(UploadBeginResponse.TYPE, UploadBeginResponse.STREAM_CODEC,
                 (payload, context) -> clientHandler.handle(payload, context));
         registrar.playToClient(UploadResult.TYPE, UploadResult.STREAM_CODEC,
@@ -61,6 +69,10 @@ public final class ModPayloads {
         registrar.playToClient(DownloadChunk.TYPE, DownloadChunk.STREAM_CODEC,
                 (payload, context) -> clientHandler.handle(payload, context));
         registrar.playToClient(TrackUnavailable.TYPE, TrackUnavailable.STREAM_CODEC,
+                (payload, context) -> clientHandler.handle(payload, context));
+        registrar.playToClient(LibraryPageResponse.TYPE, LibraryPageResponse.STREAM_CODEC,
+                (payload, context) -> clientHandler.handle(payload, context));
+        registrar.playToClient(LibraryWriteResponse.TYPE, LibraryWriteResponse.STREAM_CODEC,
                 (payload, context) -> clientHandler.handle(payload, context));
     }
 
@@ -94,6 +106,9 @@ public final class ModPayloads {
             public void handle(UrlUploadRequest payload, IPayloadContext context) {
                 context.disconnect(net.minecraft.network.chat.Component.literal("Custom Jukebox Discs is not ready"));
             }
+
+            @Override public void handle(LibraryPageRequest payload, IPayloadContext context) { }
+            @Override public void handle(LibraryWriteRequest payload, IPayloadContext context) { }
         };
 
         void handle(UploadBeginRequest payload, IPayloadContext context);
@@ -107,6 +122,8 @@ public final class ModPayloads {
         void handle(PlaybackPreference payload, IPayloadContext context);
 
         void handle(UrlUploadRequest payload, IPayloadContext context);
+        void handle(LibraryPageRequest payload, IPayloadContext context);
+        void handle(LibraryWriteRequest payload, IPayloadContext context);
     }
 
     public interface ClientHandler {
@@ -124,6 +141,8 @@ public final class ModPayloads {
             @Override public void handle(TrackBegin payload, IPayloadContext context) { }
             @Override public void handle(DownloadChunk payload, IPayloadContext context) { }
             @Override public void handle(TrackUnavailable payload, IPayloadContext context) { }
+            @Override public void handle(LibraryPageResponse payload, IPayloadContext context) { }
+            @Override public void handle(LibraryWriteResponse payload, IPayloadContext context) { }
         };
 
         void handle(UploadBeginResponse payload, IPayloadContext context);
@@ -135,5 +154,7 @@ public final class ModPayloads {
         void handle(TrackBegin payload, IPayloadContext context);
         void handle(DownloadChunk payload, IPayloadContext context);
         void handle(TrackUnavailable payload, IPayloadContext context);
+        void handle(LibraryPageResponse payload, IPayloadContext context);
+        void handle(LibraryWriteResponse payload, IPayloadContext context);
     }
 }

@@ -5,6 +5,10 @@ import dev.muhammedesmer.customjukeboxdiscs.content.writer.DiscWriterBlockEntity
 import dev.muhammedesmer.customjukeboxdiscs.content.writer.DiscWriterMenu;
 import dev.muhammedesmer.customjukeboxdiscs.network.ModPayloads;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.UploadBeginRequest;
+import dev.muhammedesmer.customjukeboxdiscs.network.payload.LibraryPageRequest;
+import dev.muhammedesmer.customjukeboxdiscs.network.payload.LibraryPageResponse;
+import dev.muhammedesmer.customjukeboxdiscs.network.payload.LibraryWriteRequest;
+import dev.muhammedesmer.customjukeboxdiscs.network.payload.LibraryWriteResponse;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.UploadBeginResponse;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.UploadChunk;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.UploadFinish;
@@ -155,6 +159,42 @@ public final class ServerRuntime implements ModPayloads.ServerHandler {
     @Override
     public void handle(UploadBeginRequest payload, IPayloadContext context) {
         context.enqueueWork(() -> begin(payload, requirePlayer(context)));
+    }
+
+    @Override
+    public void handle(LibraryPageRequest payload, IPayloadContext context) {
+        context.enqueueWork(() -> {
+            ServerPlayer player = requirePlayer(context);
+            if (!(player.containerMenu instanceof DiscWriterMenu)) return;
+            var page = catalog.pageClamped(payload.page(), LibraryPageResponse.MAX_TRACKS);
+            send(player, new LibraryPageResponse(page.page(), page.pageCount(), page.totalTracks(),
+                    page.entries().stream().map(metadata -> metadata.reference()).toList()));
+        });
+    }
+
+    @Override
+    public void handle(LibraryWriteRequest payload, IPayloadContext context) {
+        context.enqueueWork(() -> {
+            ServerPlayer player = requirePlayer(context);
+            if (!(player.containerMenu instanceof DiscWriterMenu menu)
+                    || !(menu.writer() instanceof DiscWriterBlockEntity writer)
+                    || !writer.stillValid(player)) {
+                send(player, new LibraryWriteResponse(LibraryWriteResponse.Result.INVALID_WRITER));
+                return;
+            }
+            var metadata = catalog.find(payload.sha256());
+            if (metadata.isEmpty() || trackStorage.find(
+                    metadata.get().reference().sha256(), metadata.get().reference().format()).isEmpty()) {
+                send(player, new LibraryWriteResponse(LibraryWriteResponse.Result.TRACK_UNAVAILABLE));
+                return;
+            }
+            if (!writer.writeDisc(payload.inputFingerprint(), metadata.get().reference())) {
+                send(player, new LibraryWriteResponse(LibraryWriteResponse.Result.INVALID_WRITER));
+                return;
+            }
+            menu.broadcastChanges();
+            send(player, new LibraryWriteResponse(LibraryWriteResponse.Result.WRITTEN));
+        });
     }
 
     private void begin(UploadBeginRequest payload, ServerPlayer player) {
