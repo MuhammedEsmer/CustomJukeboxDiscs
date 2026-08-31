@@ -20,10 +20,10 @@ final class ModIdentityTest {
         assertEquals("customjukeboxdiscs", properties.getProperty("mod_id"));
         assertEquals("Custom Jukebox Discs", properties.getProperty("mod_name"));
         assertEquals("dev.muhammedesmer.customjukeboxdiscs", properties.getProperty("mod_group_id"));
-        assertEquals("1.21.1", properties.getProperty("minecraft_version"));
-        assertEquals("[1.21.1,1.21.2)", properties.getProperty("minecraft_version_range"));
-        assertEquals("21.1.231", properties.getProperty("neo_version"));
-        assertEquals("[21.1.231,22)", properties.getProperty("neo_version_range"));
-        assertEquals("21", properties.getProperty("java_version"));
+        assertEquals("26.1.2", properties.getProperty("minecraft_version"));
+        assertEquals("[26.1.2,26.1.3)", properties.getProperty("minecraft_version_range"));
+        assertEquals("26.1.2.94", properties.getProperty("neo_version"));
+        assertEquals("[26.1.2.94,26.2)", properties.getProperty("neo_version_range"));
+        assertEquals("25", properties.getProperty("java_version"));
     }
 }
