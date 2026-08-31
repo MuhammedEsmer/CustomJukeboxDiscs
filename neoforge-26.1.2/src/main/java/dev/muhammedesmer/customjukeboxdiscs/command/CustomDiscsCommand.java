@@ -1,6 +1,5 @@
 package dev.muhammedesmer.customjukeboxdiscs.command;
 
-import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -16,6 +15,8 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.GameProfileArgument;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.permissions.Permissions;
+import net.minecraft.server.players.NameAndId;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
 public final class CustomDiscsCommand {
@@ -49,7 +50,7 @@ public final class CustomDiscsCommand {
                 .then(Commands.literal("delete").then(Commands.argument("sha256", StringArgumentType.word())
                         .executes(CustomDiscsCommand::delete)));
         event.getDispatcher().register(Commands.literal("customdiscs")
-                .requires(source -> source.hasPermission(3))
+                .requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
                 .then(access)
                 .then(tracks)
                 .then(Commands.literal("reload").executes(CustomDiscsCommand::reload)));
@@ -64,11 +65,11 @@ public final class CustomDiscsCommand {
             throws CommandSyntaxException {
         AccessService service = ServerRuntime.access();
         int changed = 0;
-        for (GameProfile profile : GameProfileArgument.getGameProfiles(context, "players")) {
+        for (NameAndId profile : GameProfileArgument.getGameProfiles(context, "players")) {
             switch (action) {
-                case ALLOW -> service.allow(profile.getId());
-                case DENY -> service.deny(profile.getId());
-                case REMOVE -> service.remove(profile.getId());
+                case ALLOW -> service.allow(profile.id());
+                case DENY -> service.deny(profile.id());
+                case REMOVE -> service.remove(profile.id());
             }
             changed++;
         }
@@ -84,10 +85,10 @@ public final class CustomDiscsCommand {
     private static int playerStatus(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         AccessService service = ServerRuntime.access();
         int reported = 0;
-        for (GameProfile profile : GameProfileArgument.getGameProfiles(context, "players")) {
-            UUID playerId = profile.getId();
+        for (NameAndId profile : GameProfileArgument.getGameProfiles(context, "players")) {
+            UUID playerId = profile.id();
             String state = service.isDenied(playerId) ? "denied" : service.isAllowed(playerId) ? "allowed" : "default";
-            reply(context, "command.customjukeboxdiscs.player_status", profile.getName(),
+            reply(context, "command.customjukeboxdiscs.player_status", profile.name(),
                     Component.translatable("command.customjukeboxdiscs.state." + state),
                     service.mode().serializedName());
             reported++;

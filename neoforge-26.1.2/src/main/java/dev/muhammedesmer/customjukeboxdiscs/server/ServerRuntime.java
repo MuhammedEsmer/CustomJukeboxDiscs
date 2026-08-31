@@ -51,6 +51,7 @@ import net.minecraft.server.level.ServerLevel;
 import dev.muhammedesmer.customjukeboxdiscs.content.disc.TrackReference;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.Level;
 import net.minecraft.resources.ResourceKey;
@@ -211,9 +212,9 @@ public final class ServerRuntime implements ModPayloads.ServerHandler {
         // never match, which broke every write on a dedicated server.
         long fingerprint = writer.inputFingerprint();
         BeginUploadResult result = uploads.begin(
-                player.getUUID(), player.hasPermissions(3) ? 3 : 0,
+                player.getUUID(), isOperator(player) ? 3 : 0,
                 new BeginUpload(payload.clientHash(), payload.declaredBytes(), payload.formatHint(),
-                        payload.title(), player.getGameProfile().getName()));
+                        payload.title(), player.getGameProfile().name()));
         if (result.alreadyPresent()) {
             if (writer.writeDisc(fingerprint, result.existingTrack())) {
                 send(player, new UploadBeginResponse(
@@ -255,8 +256,8 @@ public final class ServerRuntime implements ModPayloads.ServerHandler {
         // Server's own fingerprint, see begin(): a client value would never match across JVMs.
         long fingerprint = writer.inputFingerprint();
         UUID playerId = player.getUUID();
-        int permissionLevel = player.hasPermissions(3) ? 3 : 0;
-        String uploaderName = player.getGameProfile().getName();
+        int permissionLevel = isOperator(player) ? 3 : 0;
+        String uploaderName = player.getGameProfile().name();
         ioExecutor.execute(() -> {
             java.nio.file.Path temporary;
             try {
@@ -527,6 +528,10 @@ public final class ServerRuntime implements ModPayloads.ServerHandler {
 
     private static void send(ServerPlayer player, net.minecraft.network.protocol.common.custom.CustomPacketPayload payload) {
         net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(player, payload);
+    }
+
+    private static boolean isOperator(ServerPlayer player) {
+        return player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER);
     }
 
     private record WriterReservation(
