@@ -82,6 +82,19 @@ final class TrackCatalogDataTest {
         assertEquals(1, new TrackCatalogData().page(1, 10).pageCount());
     }
 
+    @Test
+    void pageClamped_RequestBeyondLastPage_ReturnsLastPage() {
+        TrackCatalogData catalog = new TrackCatalogData();
+        catalog.add(metadata("a".repeat(64), 100, "2026-08-14T00:00:01Z"));
+        catalog.add(metadata("b".repeat(64), 100, "2026-08-14T00:00:02Z"));
+        catalog.add(metadata("c".repeat(64), 100, "2026-08-14T00:00:03Z"));
+
+        TrackCatalogData.CatalogPage actual = catalog.pageClamped(99, 2);
+
+        assertEquals(2, actual.page());
+        assertEquals("c".repeat(64), actual.entries().getFirst().reference().sha256());
+    }
+
     private static TrackMetadata metadata(String hash, long bytes) {
         return metadata(hash, bytes, "2026-08-14T00:00:00Z");
     }
