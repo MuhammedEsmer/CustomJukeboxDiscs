@@ -77,3 +77,5 @@ commands.customjukeboxdiscs.usage=/customdiscs <access|tracks|reload>
 commands.customjukeboxdiscs.access.player.usage=/customdiscs access <allow|deny|remove> <players...>
 commands.customjukeboxdiscs.tracks.info.usage=/customdiscs tracks info <sha256>
 commands.customjukeboxdiscs.tracks.delete.usage=/customdiscs tracks delete <sha256>
+key.customjukeboxdiscs.toggle_playback=Toggle Custom Disc Playback
+key.categories.customjukeboxdiscs=Custom Jukebox Discs

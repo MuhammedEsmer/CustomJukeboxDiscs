@@ -1,6 +1,7 @@
 package dev.hoodoo.customjukeboxdiscs.proxy;
 
 import dev.hoodoo.customjukeboxdiscs.client.render.TileEntityDiscRackRenderer;
+import dev.hoodoo.customjukeboxdiscs.client.ClientGameEvents;
 import dev.hoodoo.customjukeboxdiscs.config.ForgeClientConfig;
 import dev.hoodoo.customjukeboxdiscs.content.rack.TileEntityDiscRack;
 import java.io.File;
@@ -14,6 +15,7 @@ public class ClientProxy extends CommonProxy {
     public void preInit(FMLPreInitializationEvent event) {
         super.preInit(event);
         ForgeClientConfig.init(new File(event.getModConfigurationDirectory(), "customjukeboxdiscs-client.cfg"));
+        ClientRegistry.registerKeyBinding(ClientGameEvents.TOGGLE_PLAYBACK);
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityDiscRack.class, new TileEntityDiscRackRenderer());
     }
 
@@ -22,6 +24,7 @@ public class ClientProxy extends CommonProxy {
         super.init(event);
         try {
             paulscode.sound.SoundSystemConfig.setCodec("mp3", dev.hoodoo.customjukeboxdiscs.client.audio.CodecMP3.class);
+            paulscode.sound.SoundSystemConfig.setCodec("ogg", dev.hoodoo.customjukeboxdiscs.client.audio.CodecJOrbisOffset.class);
         } catch (Throwable t) {
             // ignore
         }

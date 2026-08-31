@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Arrays;
 import javax.sound.sampled.AudioFormat;
 import javazoom.jl.decoder.Bitstream;
 import javazoom.jl.decoder.Decoder;
@@ -59,6 +60,7 @@ public class CodecMP3 implements ICodec {
             pendingBytes = sampleBufferToBytes(samples);
             initialized = true;
             endOfStream = false;
+            skip(PlaybackOffsetRegistry.consume(url));
             LOGGER.info("Initialized MP3 stream: {} ({}Hz, {} channels)", url, sampleRate, channels);
             return true;
         } catch (Exception e) {
@@ -171,6 +173,22 @@ public class CodecMP3 implements ICodec {
     @Override
     public AudioFormat getAudioFormat() {
         return audioFormat;
+    }
+
+    private void skip(long elapsedMillis) {
+        long bytes = (long) audioFormat.getFrameSize()
+                * (long) audioFormat.getSampleRate() * elapsedMillis / 1_000L;
+        while (bytes > 0L) {
+            SoundBuffer buffer = read();
+            if (buffer == null || buffer.audioData == null) {
+                return;
+            }
+            if (bytes < buffer.audioData.length) {
+                pendingBytes = Arrays.copyOfRange(buffer.audioData, (int) bytes, buffer.audioData.length);
+                return;
+            }
+            bytes -= buffer.audioData.length;
+        }
     }
 
     private static byte[] sampleBufferToBytes(SampleBuffer samples) {

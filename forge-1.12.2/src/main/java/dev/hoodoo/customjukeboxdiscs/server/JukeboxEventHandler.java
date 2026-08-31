@@ -1,6 +1,7 @@
 package dev.hoodoo.customjukeboxdiscs.server;
 
 import dev.hoodoo.customjukeboxdiscs.client.ClientPlaybackPreference;
+import dev.hoodoo.customjukeboxdiscs.client.ClientGameEvents;
 import dev.hoodoo.customjukeboxdiscs.client.transfer.ClientPlaybackManager;
 import dev.hoodoo.customjukeboxdiscs.content.disc.ProgrammedDiscItem;
 import dev.hoodoo.customjukeboxdiscs.content.disc.TrackReference;
@@ -76,6 +77,7 @@ public class JukeboxEventHandler {
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
+            ClientGameEvents.tick();
             ClientPlaybackManager.getInstance().getAudioEngine().tick();
         }
     }

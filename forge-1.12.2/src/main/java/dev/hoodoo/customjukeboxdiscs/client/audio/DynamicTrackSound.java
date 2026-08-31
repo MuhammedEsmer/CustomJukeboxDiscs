@@ -53,7 +53,10 @@ public final class DynamicTrackSound {
         try {
             SoundSystemConfig.setCodec("mp3", CodecMP3.class);
             File audioFile = file.toFile();
-            URL url = audioFile.toURI().toURL();
+            // Each source gets a distinct URL fragment so simultaneous plays of the same cached file
+            // cannot consume one another's resume offset from the codec registry.
+            URL url = new URL(audioFile.toURI().toURL().toExternalForm() + "#" + sourceName);
+            PlaybackOffsetRegistry.register(url, timeline.elapsedMillisAt(System.nanoTime()));
             float[] pos = getPosition();
 
             LOGGER.info("Starting audio stream for '{}' (file: {}, pos: {},{},{})",
