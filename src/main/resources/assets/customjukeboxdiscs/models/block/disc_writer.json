@@ -1,4 +1,12 @@
 {
-  "parent": "minecraft:block/cube_all",
-  "textures": { "all": "minecraft:block/jukebox_side" }
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "customjukeboxdiscs:block/disc_writer_side",
+    "down": "customjukeboxdiscs:block/disc_writer_bottom",
+    "up": "customjukeboxdiscs:block/disc_writer_top",
+    "north": "customjukeboxdiscs:block/disc_writer_front",
+    "south": "customjukeboxdiscs:block/disc_writer_side",
+    "west": "customjukeboxdiscs:block/disc_writer_side",
+    "east": "customjukeboxdiscs:block/disc_writer_side"
+  }
 }
