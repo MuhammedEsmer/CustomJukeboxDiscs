@@ -77,7 +77,8 @@ public final class DiscRackRenderer implements BlockEntityRenderer<DiscRackBlock
             // FIXED item models face local -Z in 26.1; turn the item so its lit front faces out of the rack.
             poses.mulPose(com.mojang.math.Axis.YP.rotationDegrees(180.0F));
             poses.scale(DISC_SCALE, DISC_SCALE, DISC_SCALE);
-            itemState.submit(poses, submitNodeCollector, state.lightCoords, OverlayTexture.NO_OVERLAY, slot);
+            // The final argument is an outline color, not a per-slot render seed.
+            itemState.submit(poses, submitNodeCollector, state.lightCoords, OverlayTexture.NO_OVERLAY, 0);
             poses.popPose();
         }
     }
