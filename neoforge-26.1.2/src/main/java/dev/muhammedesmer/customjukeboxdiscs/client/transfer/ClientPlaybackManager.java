@@ -23,6 +23,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
 public final class ClientPlaybackManager {
@@ -110,7 +111,24 @@ public final class ClientPlaybackManager {
     private void complete(String hash, Path path) {
         List<PendingPlay> waiting = pending.remove(hash);
         retries.remove(hash);
-        if (waiting != null) waiting.forEach(play -> audio.play(play.anchor, play.track, path, play.timeline));
+        if (waiting != null) waiting.forEach(play -> {
+            audio.play(play.anchor, play.track, path, play.timeline);
+            showNowPlaying(play);
+        });
+    }
+
+    private void showNowPlaying(PendingPlay play) {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.player == null) return;
+        boolean audibleAnchor = play.anchor.isEntity()
+                ? play.anchor.entityId() == minecraft.player.getId()
+                : minecraft.player.distanceToSqr(
+                        play.anchor.pos().getX() + 0.5D,
+                        play.anchor.pos().getY() + 0.5D,
+                        play.anchor.pos().getZ() + 0.5D) <= 64.0D * 64.0D;
+        if (audibleAnchor) {
+            minecraft.gui.setNowPlaying(Component.literal(play.track.title()));
+        }
     }
 
     private ClientTrackCache cache() {

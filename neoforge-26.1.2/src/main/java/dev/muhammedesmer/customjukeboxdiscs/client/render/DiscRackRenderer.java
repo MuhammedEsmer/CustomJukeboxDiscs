@@ -74,6 +74,8 @@ public final class DiscRackRenderer implements BlockEntityRenderer<DiscRackBlock
             float across = (RackSlots.column(slot) + 0.5F) * CELL - 0.5F;
             float up = 0.5F - (RackSlots.row(slot) + 0.5F) * CELL;
             poses.translate(across, up, 0.5F + FRONT_DEPTH);
+            // FIXED item models face local -Z in 26.1; turn the item so its lit front faces out of the rack.
+            poses.mulPose(com.mojang.math.Axis.YP.rotationDegrees(180.0F));
             poses.scale(DISC_SCALE, DISC_SCALE, DISC_SCALE);
             itemState.submit(poses, submitNodeCollector, state.lightCoords, OverlayTexture.NO_OVERLAY, slot);
             poses.popPose();

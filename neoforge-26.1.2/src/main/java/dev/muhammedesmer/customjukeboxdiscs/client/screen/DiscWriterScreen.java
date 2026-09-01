@@ -250,7 +250,7 @@ public final class DiscWriterScreen extends AbstractContainerScreen<DiscWriterMe
     private void renderLibrary(GuiGraphicsExtractor graphics) {
         if (libraryTracks.isEmpty()) {
             graphics.text(font, Component.translatable("screen.customjukeboxdiscs.disc_writer.library_empty"),
-                    leftPos + LIST_X + 3, topPos + LIST_Y + 4, 0x686868, false);
+                    leftPos + LIST_X + 3, topPos + LIST_Y + 4, 0xFF686868, false);
             return;
         }
         for (int row = 0; row < VISIBLE_ROWS && row + scroll < libraryTracks.size(); row++) {
@@ -258,13 +258,13 @@ public final class DiscWriterScreen extends AbstractContainerScreen<DiscWriterMe
             TrackReference track = libraryTracks.get(index);
             int y = topPos + LIST_Y + row * LIBRARY_ROW_HEIGHT;
             if (index == selected) graphics.fill(leftPos + LIST_X, y, leftPos + LIST_X + LIST_WIDTH, y + 21, 0xFF8B6B34);
-            int color = index == selected ? 0xFFFFFF : 0x3F3528;
+            int color = index == selected ? 0xFFFFFFFF : 0xFF3F3528;
             graphics.text(font, font.plainSubstrByWidth(track.title(), LIST_WIDTH - 6),
                     leftPos + LIST_X + 3, y + 2, color, false);
             String details = track.uploaderName() + " · " + duration(track.durationMillis()) + " · "
                     + track.format().serializedName().toUpperCase(java.util.Locale.ROOT);
             graphics.text(font, font.plainSubstrByWidth(details, LIST_WIDTH - 6),
-                    leftPos + LIST_X + 3, y + 12, index == selected ? 0xF0DFC1 : 0x776A58, false);
+                    leftPos + LIST_X + 3, y + 12, index == selected ? 0xFFF0DFC1 : 0xFF776A58, false);
         }
     }
 
@@ -298,7 +298,7 @@ public final class DiscWriterScreen extends AbstractContainerScreen<DiscWriterMe
     private void renderFileList(GuiGraphicsExtractor graphics) {
         if (files.isEmpty()) {
             graphics.text(font, Component.translatable("screen.customjukeboxdiscs.disc_writer.no_files"),
-                    leftPos + LIST_X + 3, topPos + LIST_Y + 4, 0x808080, false);
+                    leftPos + LIST_X + 3, topPos + LIST_Y + 4, 0xFF808080, false);
             return;
         }
         for (int row = 0; row < VISIBLE_ROWS && row + scroll < files.size(); row++) {
@@ -309,7 +309,7 @@ public final class DiscWriterScreen extends AbstractContainerScreen<DiscWriterMe
             }
             String name = files.get(index).getFileName().toString();
             graphics.text(font, font.plainSubstrByWidth(name, LIST_WIDTH - 8),
-                    leftPos + LIST_X + 3, y + 3, index == selected ? 0xFFFFFF : 0x404040, false);
+                    leftPos + LIST_X + 3, y + 3, index == selected ? 0xFFFFFFFF : 0xFF404040, false);
         }
     }
 
@@ -325,18 +325,18 @@ public final class DiscWriterScreen extends AbstractContainerScreen<DiscWriterMe
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         graphics.text(font, Component.translatable("screen.customjukeboxdiscs.disc_writer.slot"),
-                160, 15, 0x404040, false);
-        graphics.text(font, playerInventoryTitle, LIST_X, inventoryLabelY, 0x404040, false);
+                160, 15, 0xFF404040, false);
+        graphics.text(font, playerInventoryTitle, LIST_X, inventoryLabelY, 0xFF404040, false);
         int statusX = serverLibrary ? 48 : LIST_X;
         int statusY = serverLibrary ? 132 : 114;
         if (serverLibrary) {
-            graphics.text(font, libraryPage + "/" + libraryPageCount, LIST_X, statusY, 0x5A4935, false);
+            graphics.text(font, libraryPage + "/" + libraryPageCount, LIST_X, statusY, 0xFF5A4935, false);
         }
         if (status.getString().isEmpty()) {
             return;
         }
         graphics.text(font, font.plainSubstrByWidth(status.getString(), imageWidth - statusX - 8),
-                statusX, statusY, 0x404040, false);
+                    statusX, statusY, 0xFF404040, false);
     }
 
     @Override
