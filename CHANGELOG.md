@@ -14,6 +14,12 @@ live in `docs/changelogs/`.
 
 - Re-released the NeoForge 1.21.1 build after correcting its CurseForge file listing.
 
+### Fixed
+
+- Fixed invisible Disc Writer list/status text on Minecraft 26.1.2.
+- Fixed dark, backwards-facing discs displayed on Disc Racks on Minecraft 26.1.2.
+- Fixed the raw key category name and restored real track titles in the Now Playing message.
+
 ## 0.2.7
 
 ### Changed
