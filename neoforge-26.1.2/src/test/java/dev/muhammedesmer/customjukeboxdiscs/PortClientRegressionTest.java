@@ -29,6 +29,13 @@ final class PortClientRegressionTest {
     }
 
     @Test
+    void rackDiscsDoNotUseTheOutlineRenderLayer() throws IOException {
+        String source = source("client/render/DiscRackRenderer.java");
+
+        assertTrue(source.contains("state.lightCoords, OverlayTexture.NO_OVERLAY, 0)"));
+    }
+
+    @Test
     void keyCategoryHasTranslationsForTheNewCategoryApi() throws IOException {
         String key = "\"key.category.customjukeboxdiscs.custom_jukebox_discs\"";
 
