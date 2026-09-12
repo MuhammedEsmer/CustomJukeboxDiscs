@@ -74,6 +74,7 @@ public final class YouTubeImporter implements UrlTrackImporter, AutoCloseable {
             request.progress().accept(UrlImportRequest.Stage.DOWNLOADING);
             CommandRunner.Result metadata = runner.run(
                     MediaCommands.metadata(resolved.ytDlp(), uri), request.timeout(), request.cancelled());
+            if (metadata.exitCode() == -1) return interrupted(request);
             if (metadata.exitCode() != 0) return failed(UrlImportResult.Error.DOWNLOAD_FAILED);
             JsonObject json = JsonParser.parseString(metadata.output()).getAsJsonObject();
             if (json.has("is_live") && json.get("is_live").getAsBoolean()) {
@@ -87,6 +88,7 @@ public final class YouTubeImporter implements UrlTrackImporter, AutoCloseable {
                     MediaCommands.download(
                             resolved.ytDlp(), resolved.ffmpeg(), uri, request.destination(), request.maxBytes()),
                     request.timeout(), request.cancelled());
+            if (download.exitCode() == -1) return interrupted(request);
             if (download.exitCode() != 0 || !Files.isRegularFile(staged)) {
                 return failed(UrlImportResult.Error.CONVERSION_FAILED);
             }
@@ -118,6 +120,12 @@ public final class YouTubeImporter implements UrlTrackImporter, AutoCloseable {
 
     private static UrlImportResult cancelled() {
         return failed(UrlImportResult.Error.CANCELLED);
+    }
+
+    private static UrlImportResult interrupted(UrlImportRequest request) {
+        return request.cancelled().getAsBoolean()
+                ? cancelled()
+                : failed(UrlImportResult.Error.TIMED_OUT);
     }
 
     @Override

@@ -31,6 +31,7 @@ final class UrlImportDispatcher {
             case QUEUE_FULL -> UploadError.ANOTHER_UPLOAD_ACTIVE;
             case TOO_LONG -> UploadError.DURATION_LIMIT;
             case CANCELLED -> UploadError.INVALID_WRITER;
+            case TIMED_OUT -> UploadError.TIMEOUT;
             case TOOLS_UNAVAILABLE, DOWNLOAD_FAILED, CONVERSION_FAILED -> UploadError.URL_FETCH_FAILED;
         };
     }

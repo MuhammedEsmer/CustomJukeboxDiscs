@@ -11,7 +11,8 @@ public record UrlImportResult(Error error) {
         TOO_LONG,
         DOWNLOAD_FAILED,
         CONVERSION_FAILED,
-        CANCELLED
+        CANCELLED,
+        TIMED_OUT
     }
 
     public UrlImportResult {

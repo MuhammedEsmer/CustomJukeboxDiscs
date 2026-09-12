@@ -22,6 +22,10 @@ live in `docs/changelogs/`.
 - Fixed newly written discs sometimes remaining silent until their audio was downloaded again.
 - `/customdiscs tracks delete` now accepts the shortened hash printed by the track list command.
 - Ambiguous shortened hashes are rejected without deleting either track.
+- Increased the default audio source limit from 10 MiB to 25 MiB.
+- Increased the default upload timeout from 30 seconds to 120 seconds.
+- URL download timeouts now show a specific, compact error in the Disc Writer.
+- Disc Writer status messages now wrap inside their available area.
 
 ## 0.2.8
 

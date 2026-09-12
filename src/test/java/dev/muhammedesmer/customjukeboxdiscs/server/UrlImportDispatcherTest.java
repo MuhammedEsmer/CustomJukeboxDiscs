@@ -61,6 +61,18 @@ final class UrlImportDispatcherTest {
         assertEquals(UploadError.DURATION_LIMIT, result);
     }
 
+    @Test
+    void mapsImporterTimeoutToTimeoutMessage() {
+        UrlImporterRegistry registry = new UrlImporterRegistry();
+        registry.register(importer(new AtomicBoolean(),
+                UrlImportResult.failure(UrlImportResult.Error.TIMED_OUT)));
+
+        UploadError result = new UrlImportDispatcher(registry)
+                .importTo(request(), () -> UploadError.NONE).join();
+
+        assertEquals(UploadError.TIMEOUT, result);
+    }
+
     private static UrlTrackImporter importer(AtomicBoolean imported, UrlImportResult result) {
         return new UrlTrackImporter() {
             @Override

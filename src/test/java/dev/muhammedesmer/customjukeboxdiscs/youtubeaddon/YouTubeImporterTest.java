@@ -65,6 +65,16 @@ final class YouTubeImporterTest {
         assertEquals(0L, Files.list(temporaryDirectory).count());
     }
 
+    @Test
+    void reportsCommandTimeoutSeparatelyFromDownloadFailure() {
+        YouTubeImporter importer = importer((command, timeout, cancelled) ->
+                new CommandRunner.Result(-1, ""));
+
+        UrlImportResult result = importer.importTrack(request()).join();
+
+        assertEquals(UrlImportResult.Error.TIMED_OUT, result.error());
+    }
+
     private YouTubeImporter importer(CommandRunner runner) {
         return new YouTubeImporter(
                 () -> new PlatformTools(Path.of("yt-dlp"), Path.of("ffmpeg")), runner, 8);

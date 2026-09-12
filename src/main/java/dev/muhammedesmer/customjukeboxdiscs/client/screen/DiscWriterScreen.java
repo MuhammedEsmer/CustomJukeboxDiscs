@@ -34,9 +34,9 @@ public final class DiscWriterScreen extends AbstractContainerScreen<DiscWriterMe
     private static final int VISIBLE_ROWS = 4;
     private static final int LIBRARY_ROW_HEIGHT = 22;
     private static final int PROGRESS_X = 8;
-    private static final int PROGRESS_Y = 129;
+    private static final int PROGRESS_Y = 134;
     private static final int PROGRESS_WIDTH = 176;
-    private static final int PROGRESS_HEIGHT = 5;
+    private static final int PROGRESS_HEIGHT = 3;
 
     private final Path uploadDirectory = Minecraft.getInstance().gameDirectory.toPath()
             .resolve("customjukeboxdiscs/uploads");
@@ -332,8 +332,10 @@ public final class DiscWriterScreen extends AbstractContainerScreen<DiscWriterMe
         if (status.getString().isEmpty()) {
             return;
         }
-        graphics.drawString(font, font.plainSubstrByWidth(status.getString(), imageWidth - statusX - 8),
-                statusX, statusY, 0x404040, false);
+        List<net.minecraft.util.FormattedCharSequence> lines = font.split(status, imageWidth - statusX - 8);
+        for (int index = 0; index < Math.min(2, lines.size()); index++) {
+            graphics.drawString(font, lines.get(index), statusX, statusY + index * 9, 0x404040, false);
+        }
     }
 
     @Override
