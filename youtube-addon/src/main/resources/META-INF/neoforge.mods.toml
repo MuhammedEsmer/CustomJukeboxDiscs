@@ -1,0 +1,31 @@
+modLoader="javafml"
+loaderVersion="[1,)"
+license="MIT"
+
+[[mods]]
+modId="customjukeboxdiscsyoutube"
+version="0.1.0"
+displayName="Custom Jukebox Discs: YouTube Addon"
+authors="HooDoo"
+description='''Adds server-side YouTube imports to the Custom Jukebox Discs Disc Writer.'''
+
+[[dependencies.customjukeboxdiscsyoutube]]
+modId="neoforge"
+type="required"
+versionRange="[21.1.231,22)"
+ordering="NONE"
+side="SERVER"
+
+[[dependencies.customjukeboxdiscsyoutube]]
+modId="minecraft"
+type="required"
+versionRange="[1.21.1,1.21.2)"
+ordering="NONE"
+side="SERVER"
+
+[[dependencies.customjukeboxdiscsyoutube]]
+modId="customjukeboxdiscs"
+type="required"
+versionRange="[0.2.9,)"
+ordering="AFTER"
+side="SERVER"

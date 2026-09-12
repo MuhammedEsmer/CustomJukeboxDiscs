@@ -60,11 +60,23 @@ sourceSets {
         compileClasspath += sourceSets.main.output
         runtimeClasspath += sourceSets.main.output
     }
+    youtubeAddon {
+        java.srcDir('youtube-addon/src/main/java')
+        resources.srcDir('youtube-addon/src/main/resources')
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += output + compileClasspath
+    }
+    test {
+        compileClasspath += sourceSets.youtubeAddon.output
+        runtimeClasspath += sourceSets.youtubeAddon.output
+    }
 }
 
 configurations {
     gametestImplementation.extendsFrom implementation
     gametestRuntimeOnly.extendsFrom runtimeOnly
+    youtubeAddonImplementation.extendsFrom implementation
+    youtubeAddonRuntimeOnly.extendsFrom runtimeOnly
 }
 
 // Mojang ships Java 21 to end users in 1.21.1, so mods should target Java 21.
@@ -137,9 +149,13 @@ neoForge {
             sourceSet(sourceSets.main)
             sourceSet(sourceSets.gametest)
         }
+        customjukeboxdiscsyoutube {
+            sourceSet(sourceSets.youtubeAddon)
+        }
     }
 
     addModdingDependenciesTo sourceSets.gametest
+    addModdingDependenciesTo sourceSets.youtubeAddon
 
     unitTest {
         enable()
@@ -192,8 +208,28 @@ dependencies {
 }
 
 tasks.named('test', Test).configure {
+    dependsOn tasks.named('youtubeAddonClasses')
     useJUnitPlatform()
     systemProperty 'customjukeboxdiscs.projectDir', project.projectDir.absolutePath
+}
+
+tasks.register('youtubeAddonJar', Jar) {
+    dependsOn tasks.named('youtubeAddonClasses')
+    from sourceSets.youtubeAddon.output
+    archiveBaseName = 'customjukeboxdiscs-youtube-1.21.1'
+    archiveVersion = '0.1.0'
+}
+
+tasks.register('archiveYouTubeAddon', Copy) {
+    dependsOn tasks.named('youtubeAddonJar')
+    from tasks.named('youtubeAddonJar')
+    into layout.projectDirectory.dir('releases')
+    outputs.upToDateWhen { false }
+}
+
+tasks.named('build') {
+    dependsOn tasks.named('youtubeAddonJar')
+    finalizedBy tasks.named('archiveYouTubeAddon')
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
