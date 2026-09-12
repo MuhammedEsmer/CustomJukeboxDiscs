@@ -4,6 +4,18 @@ All notable changes to Custom Jukebox Discs. Versions follow [semantic versionin
 1.0.0 is reserved for the first release considered feature complete. Per-version notes for uploading
 live in `docs/changelogs/`.
 
+## 0.2.9
+
+### Added
+
+- Added a server URL-import API used by optional media addons.
+- Added support for the separate NeoForge 1.21.1 YouTube addon without requiring it on clients.
+
+### Changed
+
+- Supported addon URLs can be imported even when the unrestricted direct-link downloader is disabled.
+- URL imports now return to the Minecraft server thread before writing the finished disc.
+
 ## 0.2.8
 
 ### Added

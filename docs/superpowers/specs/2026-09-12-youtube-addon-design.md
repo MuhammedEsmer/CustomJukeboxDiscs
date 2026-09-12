@@ -52,11 +52,11 @@ The job timeout defaults to five minutes. `yt-dlp` rejects media longer than the
 `config/customjukeboxdiscs-youtube-server.toml` contains:
 
 - `enabled` (default `true`)
-- `maxDurationSeconds` (default `900`)
-- `jobTimeoutSeconds` (default `300`)
 - `maxQueuedJobs` (default `8`)
 - `ytDlpPath` and `ffmpegPath` (empty means managed tools)
 - `managedToolDownloads` (default `true`)
+
+Duration, output size and request timeout use the base mod's existing server limits.
 
 Configuration cannot add arbitrary supported hosts or raw command-line arguments.
 

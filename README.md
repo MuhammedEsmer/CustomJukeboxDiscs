@@ -19,6 +19,21 @@ Requires Java 21.
 
 The distributable JAR is written to `build/libs` and must be installed on both server and client.
 
+## Optional YouTube addon
+
+The separate NeoForge 1.21.1 addon is built as
+`releases/customjukeboxdiscs-youtube-1.21.1-0.1.0.jar`. Install it only on the server beside
+Custom Jukebox Discs 0.2.9 or newer. Players keep using the existing Disc Writer link field and do
+not install the addon.
+
+The first YouTube import downloads verified `yt-dlp` and FFmpeg builds into
+`config/customjukeboxdiscs-youtube/tools`. FFmpeg is a large download, so the first import takes
+longer. Explicit tool paths and managed downloads can be changed in
+`serverconfig/customjukeboxdiscs-youtube-server.toml`.
+
+Only single public video links are supported. Playlists, livestreams and login-protected videos are
+rejected. Server owners and players are responsible for importing only audio they are allowed to use.
+
 ## Administration
 
 ```text
