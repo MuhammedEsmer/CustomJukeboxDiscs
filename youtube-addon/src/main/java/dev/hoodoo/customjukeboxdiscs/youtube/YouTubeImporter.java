@@ -96,7 +96,19 @@ public final class YouTubeImporter implements UrlTrackImporter, AutoCloseable {
         } catch (IOException | RuntimeException exception) {
             return failed(UrlImportResult.Error.TOOLS_UNAVAILABLE);
         } finally {
-            try { Files.deleteIfExists(staged); } catch (IOException ignored) { }
+            cleanupStaged(request.destination());
+        }
+    }
+
+    private static void cleanupStaged(Path destination) {
+        Path absolute = destination.toAbsolutePath();
+        Path parent = absolute.getParent();
+        String prefix = absolute.getFileName() + ".";
+        try (var files = Files.list(parent)) {
+            for (Path file : files.filter(path -> path.getFileName().toString().startsWith(prefix)).toList()) {
+                Files.deleteIfExists(file);
+            }
+        } catch (IOException ignored) {
         }
     }
 

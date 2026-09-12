@@ -48,6 +48,23 @@ final class YouTubeImporterTest {
         assertEquals("fake mp3", Files.readString(temporaryDirectory.resolve("track.part")));
     }
 
+    @Test
+    void failedConversionRemovesPartialDownloadFiles() throws Exception {
+        CommandRunner runner = (command, timeout, cancelled) -> {
+            if (command.contains("--dump-single-json")) {
+                return new CommandRunner.Result(0, "{\"duration\":120,\"is_live\":false}");
+            }
+            int output = command.indexOf("--output") + 1;
+            Files.writeString(Path.of(command.get(output).replace("%(ext)s", "webm")), "partial");
+            return new CommandRunner.Result(1, "conversion failed");
+        };
+
+        UrlImportResult result = importer(runner).importTrack(request()).join();
+
+        assertEquals(UrlImportResult.Error.CONVERSION_FAILED, result.error());
+        assertEquals(0L, Files.list(temporaryDirectory).count());
+    }
+
     private YouTubeImporter importer(CommandRunner runner) {
         return new YouTubeImporter(
                 () -> new PlatformTools(Path.of("yt-dlp"), Path.of("ffmpeg")), runner, 8);
