@@ -13,6 +13,7 @@ public record UrlImportRequest(
         Path destination,
         UUID playerId,
         Duration timeout,
+        Duration maxDuration,
         long maxBytes,
         BooleanSupplier cancelled,
         Consumer<Stage> progress) {
@@ -23,6 +24,7 @@ public record UrlImportRequest(
         Objects.requireNonNull(destination, "destination");
         Objects.requireNonNull(playerId, "playerId");
         Objects.requireNonNull(timeout, "timeout");
+        Objects.requireNonNull(maxDuration, "maxDuration");
         Objects.requireNonNull(cancelled, "cancelled");
         Objects.requireNonNull(progress, "progress");
         if (maxBytes < 1) throw new IllegalArgumentException("maxBytes must be positive");

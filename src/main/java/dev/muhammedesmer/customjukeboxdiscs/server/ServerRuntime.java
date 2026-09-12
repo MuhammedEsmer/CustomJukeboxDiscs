@@ -240,7 +240,15 @@ public final class ServerRuntime implements ModPayloads.ServerHandler {
 
     private void beginUrl(UrlUploadRequest payload, ServerPlayer player) {
         ServerConfig config = ServerConfig.INSTANCE;
-        if (!config.urlUploadsEnabled()) {
+        URI uri;
+        try {
+            uri = new URI(payload.url());
+        } catch (URISyntaxException exception) {
+            send(player, new UploadResult(UploadError.URL_NOT_ALLOWED, null));
+            return;
+        }
+        // Addons can own specific URL schemes without enabling the unrestricted direct-link downloader.
+        if (!config.urlUploadsEnabled() && UrlImporterRegistry.INSTANCE.find(uri).isEmpty()) {
             send(player, new UploadResult(UploadError.URL_NOT_ALLOWED, null));
             return;
         }
@@ -258,13 +266,6 @@ public final class ServerRuntime implements ModPayloads.ServerHandler {
         UUID playerId = player.getUUID();
         int permissionLevel = player.hasPermissions(3) ? 3 : 0;
         String uploaderName = player.getGameProfile().getName();
-        URI uri;
-        try {
-            uri = new URI(payload.url());
-        } catch (URISyntaxException exception) {
-            send(player, new UploadResult(UploadError.URL_NOT_ALLOWED, null));
-            return;
-        }
         ioExecutor.execute(() -> {
             java.nio.file.Path temporary;
             try {
@@ -278,6 +279,7 @@ public final class ServerRuntime implements ModPayloads.ServerHandler {
                     temporary,
                     playerId,
                     java.time.Duration.ofMillis(config.snapshot().uploadTimeoutMillis()),
+                    java.time.Duration.ofMillis(config.snapshot().maxDurationMillis()),
                     maxBytes,
                     () -> writer.inputFingerprint() != fingerprint
                             || !(player.containerMenu instanceof DiscWriterMenu open)

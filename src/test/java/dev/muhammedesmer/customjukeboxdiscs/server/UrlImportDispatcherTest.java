@@ -84,6 +84,6 @@ final class UrlImportDispatcherTest {
     private static UrlImportRequest request() {
         return new UrlImportRequest(
                 URI.create("https://youtube.com/watch?v=abc"), Path.of("track.part"), UUID.randomUUID(),
-                Duration.ofMinutes(5), 1024, () -> false, ignored -> { });
+                Duration.ofMinutes(5), Duration.ofMinutes(10), 1024, () -> false, ignored -> { });
     }
 }
