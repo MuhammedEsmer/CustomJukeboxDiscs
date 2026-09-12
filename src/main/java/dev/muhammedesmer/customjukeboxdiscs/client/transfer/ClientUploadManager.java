@@ -96,6 +96,7 @@ public final class ClientUploadManager implements ModPayloads.ClientHandler {
             finishStatus(current, Component.translatable(
                     "upload.customjukeboxdiscs.failed", Component.translatable(response.error().translationKey())));
         } else if (response.status() == UploadBeginResponse.Status.ALREADY_PRESENT) {
+            ClientPlaybackManager.INSTANCE.cacheLocal(current.file, response.existingTrack());
             finishStatus(current, Component.translatable("upload.customjukeboxdiscs.complete"));
         } else {
             CompletableFuture.runAsync(() -> upload(current, response));
@@ -130,6 +131,9 @@ public final class ClientUploadManager implements ModPayloads.ClientHandler {
     public void handle(UploadResult result, IPayloadContext context) {
         Pending current = pending;
         if (current != null) {
+            if (result.error() == UploadError.NONE) {
+                ClientPlaybackManager.INSTANCE.cacheLocal(current.file, result.track());
+            }
             finishStatus(current, result.error() == UploadError.NONE
                     ? Component.translatable("upload.customjukeboxdiscs.complete")
                     : Component.translatable("upload.customjukeboxdiscs.failed",

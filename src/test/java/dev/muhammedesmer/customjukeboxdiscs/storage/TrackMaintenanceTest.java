@@ -51,6 +51,35 @@ final class TrackMaintenanceTest {
     }
 
     @Test
+    void deleteAcceptsTheShortHashShownByTheListCommand() throws IOException {
+        String hash = "abcdef123456" + "0".repeat(52);
+        Path file = writeTrackFile(hash);
+        catalog.add(metadata(hash));
+
+        assertTrue(maintenance.delete("abcdef123456"));
+
+        assertTrue(catalog.find(hash).isEmpty());
+        assertFalse(Files.exists(file));
+    }
+
+    @Test
+    void deleteRejectsAnAmbiguousShortHash() throws IOException {
+        String first = "abcdef123456" + "0".repeat(52);
+        String second = "abcdef123456" + "1".repeat(52);
+        Path firstFile = writeTrackFile(first);
+        Path secondFile = writeTrackFile(second);
+        catalog.add(metadata(first));
+        catalog.add(metadata(second));
+
+        assertFalse(maintenance.delete("abcdef123456"));
+
+        assertTrue(catalog.find(first).isPresent());
+        assertTrue(catalog.find(second).isPresent());
+        assertTrue(Files.exists(firstFile));
+        assertTrue(Files.exists(secondFile));
+    }
+
+    @Test
     void recoveryDeletesLeftOverTemporaryFiles() throws IOException {
         Path temporary = storage.createTemporary(UUID.randomUUID());
 

@@ -16,6 +16,13 @@ live in `docs/changelogs/`.
 - Supported addon URLs can be imported even when the unrestricted direct-link downloader is disabled.
 - URL imports now return to the Minecraft server thread before writing the finished disc.
 
+### Fixed
+
+- Newly uploaded local tracks are now verified and copied into the client cache immediately.
+- Fixed newly written discs sometimes remaining silent until their audio was downloaded again.
+- `/customdiscs tracks delete` now accepts the shortened hash printed by the track list command.
+- Ambiguous shortened hashes are rejected without deleting either track.
+
 ## 0.2.8
 
 ### Added

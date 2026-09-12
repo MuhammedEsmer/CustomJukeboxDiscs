@@ -91,6 +91,18 @@ public final class ClientPlaybackManager {
         retries.remove(payload.sha256());
     }
 
+    public void cacheLocal(Path source, TrackReference track) {
+        if (source == null || track == null) return;
+        ClientTrackCache current = cache();
+        io.execute(() -> {
+            try {
+                current.importVerified(source, track.sha256(), track.format());
+            } catch (IOException ignored) {
+                // Playback can still retrieve the validated server copy on demand.
+            }
+        });
+    }
+
     public void reset() {
         audio.stopAll();
         pending.clear();

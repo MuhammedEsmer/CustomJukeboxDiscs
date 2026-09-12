@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import dev.muhammedesmer.customjukeboxdiscs.content.disc.AudioFormat;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -38,5 +39,29 @@ class ClientTrackCacheTest {
         assertThrows(java.io.IOException.class, () -> cache.append(hash, 1, new byte[] {1}, false));
         cache.cancel(hash);
         assertTrue(Files.walk(directory).noneMatch(path -> path.getFileName().toString().endsWith(".part")));
+    }
+
+    @Test
+    void importVerifiedCachesANewlyWrittenLocalTrack() throws Exception {
+        byte[] bytes = "uploaded audio".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        String hash = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes));
+        Path source = directory.resolve("upload.ogg");
+        Files.write(source, bytes);
+        ClientTrackCache cache = new ClientTrackCache(directory, "singleplayer", 100);
+
+        Path stored = cache.importVerified(source, hash, AudioFormat.OGG);
+
+        assertArrayEquals(bytes, Files.readAllBytes(stored));
+        assertTrue(cache.find(hash, AudioFormat.OGG).isPresent());
+    }
+
+    @Test
+    void importVerifiedRejectsAChangedSourceFile() throws Exception {
+        Path source = directory.resolve("upload.mp3");
+        Files.writeString(source, "changed audio");
+        ClientTrackCache cache = new ClientTrackCache(directory, "server", 100);
+
+        assertThrows(IOException.class,
+                () -> cache.importVerified(source, "a".repeat(64), AudioFormat.MP3));
     }
 }
