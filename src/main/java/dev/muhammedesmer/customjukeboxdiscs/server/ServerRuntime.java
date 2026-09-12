@@ -1,5 +1,7 @@
 package dev.muhammedesmer.customjukeboxdiscs.server;
 
+import dev.muhammedesmer.customjukeboxdiscs.api.url.UrlImportRequest;
+import dev.muhammedesmer.customjukeboxdiscs.api.url.UrlImporterRegistry;
 import dev.muhammedesmer.customjukeboxdiscs.config.ServerConfig;
 import dev.muhammedesmer.customjukeboxdiscs.content.writer.DiscWriterBlockEntity;
 import dev.muhammedesmer.customjukeboxdiscs.content.writer.DiscWriterMenu;
@@ -38,6 +40,8 @@ import dev.muhammedesmer.customjukeboxdiscs.transfer.TrackUrlPolicy;
 import dev.muhammedesmer.customjukeboxdiscs.transfer.UploadManager;
 import java.util.HashMap;
 import java.util.Map;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -254,6 +258,13 @@ public final class ServerRuntime implements ModPayloads.ServerHandler {
         UUID playerId = player.getUUID();
         int permissionLevel = player.hasPermissions(3) ? 3 : 0;
         String uploaderName = player.getGameProfile().getName();
+        URI uri;
+        try {
+            uri = new URI(payload.url());
+        } catch (URISyntaxException exception) {
+            send(player, new UploadResult(UploadError.URL_NOT_ALLOWED, null));
+            return;
+        }
         ioExecutor.execute(() -> {
             java.nio.file.Path temporary;
             try {
@@ -262,25 +273,54 @@ public final class ServerRuntime implements ModPayloads.ServerHandler {
                 server.execute(() -> send(player, new UploadResult(UploadError.STORAGE_FAILURE, null)));
                 return;
             }
-            UploadError downloaded = fetcher.download(payload.url(), temporary, maxBytes);
-            if (downloaded != UploadError.NONE) {
-                try { Files.deleteIfExists(temporary); } catch (java.io.IOException ignored) { }
-                server.execute(() -> send(player, new UploadResult(downloaded, null)));
-                return;
-            }
-            uploads.ingestDownloaded(playerId, permissionLevel, payload.title(), uploaderName, temporary,
-                            () -> writer.inputFingerprint() == fingerprint
-                                    && player.containerMenu instanceof DiscWriterMenu open
-                                    && open.writer() == writer)
-                    .thenAccept(result -> {
-                        UploadError error = result.error();
-                        if (error == UploadError.NONE && !writer.writeDisc(fingerprint, result.track())) {
-                            error = UploadError.INVALID_WRITER;
-                        }
-                        UploadError finalError = error;
-                        send(player, new UploadResult(finalError, finalError == UploadError.NONE ? result.track() : null));
-                    });
+            UrlImportRequest request = new UrlImportRequest(
+                    uri,
+                    temporary,
+                    playerId,
+                    java.time.Duration.ofMillis(config.snapshot().uploadTimeoutMillis()),
+                    maxBytes,
+                    () -> writer.inputFingerprint() != fingerprint
+                            || !(player.containerMenu instanceof DiscWriterMenu open)
+                            || open.writer() != writer,
+                    ignored -> { });
+            new UrlImportDispatcher(UrlImporterRegistry.INSTANCE)
+                    .importTo(request, () -> fetcher.download(payload.url(), temporary, maxBytes))
+                    .thenAccept(downloaded -> finishUrlImport(
+                            downloaded, player, menu, writer, fingerprint, playerId,
+                            permissionLevel, payload.title(), uploaderName, temporary));
         });
+    }
+
+    private void finishUrlImport(
+            UploadError downloaded,
+            ServerPlayer player,
+            DiscWriterMenu menu,
+            DiscWriterBlockEntity writer,
+            long fingerprint,
+            UUID playerId,
+            int permissionLevel,
+            String title,
+            String uploaderName,
+            java.nio.file.Path temporary) {
+        if (downloaded != UploadError.NONE) {
+            try { Files.deleteIfExists(temporary); } catch (java.io.IOException ignored) { }
+            server.execute(() -> send(player, new UploadResult(downloaded, null)));
+            return;
+        }
+        uploads.ingestDownloaded(playerId, permissionLevel, title, uploaderName, temporary,
+                        () -> writer.inputFingerprint() == fingerprint
+                                && player.containerMenu instanceof DiscWriterMenu open
+                                && open == menu
+                                && open.writer() == writer)
+                .thenAccept(result -> server.execute(() -> {
+                    UploadError error = result.error();
+                    if (error == UploadError.NONE && !writer.writeDisc(fingerprint, result.track())) {
+                        error = UploadError.INVALID_WRITER;
+                    }
+                    UploadError finalError = error;
+                    send(player, new UploadResult(
+                            finalError, finalError == UploadError.NONE ? result.track() : null));
+                }));
     }
 
     @Override
