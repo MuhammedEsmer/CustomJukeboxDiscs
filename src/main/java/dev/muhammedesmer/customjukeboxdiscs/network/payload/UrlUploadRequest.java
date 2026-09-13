@@ -7,6 +7,8 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
+import java.util.Objects;
+
 /** Asks the server to download a track from a link and write it onto the disc in the writer. */
 public record UrlUploadRequest(String url, String title, long inputFingerprint) implements CustomPacketPayload {
     public static final int MAX_URL_LENGTH = 512;
@@ -28,7 +30,11 @@ public record UrlUploadRequest(String url, String title, long inputFingerprint) 
         if (url == null || url.isBlank() || url.length() > MAX_URL_LENGTH) {
             throw new IllegalArgumentException("url must contain 1-" + MAX_URL_LENGTH + " characters");
         }
-        PayloadValidation.requireCodePoints(title, TrackReference.MAX_TITLE_CODE_POINTS, "title");
+        Objects.requireNonNull(title, "title");
+        if (title.codePointCount(0, title.length()) > TrackReference.MAX_TITLE_CODE_POINTS) {
+            throw new IllegalArgumentException(
+                    "title must contain 0-" + TrackReference.MAX_TITLE_CODE_POINTS + " code points");
+        }
     }
 
     @Override

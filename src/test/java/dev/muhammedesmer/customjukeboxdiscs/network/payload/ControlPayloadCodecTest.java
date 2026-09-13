@@ -42,9 +42,7 @@ final class ControlPayloadCodecTest {
     }
 
     @Test
-    void urlRequestRejectsATitleOutsideTheAllowedLength() {
-        assertThrows(IllegalArgumentException.class,
-                () -> new UrlUploadRequest("https://example.com/song.mp3", "", 0L));
+    void urlRequestRejectsAnOversizedTitle() {
         assertThrows(IllegalArgumentException.class,
                 () -> new UrlUploadRequest("https://example.com/song.mp3", "x".repeat(65), 0L));
     }
