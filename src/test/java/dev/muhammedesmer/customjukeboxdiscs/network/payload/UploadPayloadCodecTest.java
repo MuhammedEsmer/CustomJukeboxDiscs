@@ -81,4 +81,15 @@ final class UploadPayloadCodecTest {
                 () -> new UrlImportProgress(UrlImportProgress.Stage.DOWNLOADING, 101, ""));
         buffer.release();
     }
+
+    @Test
+    void urlUploadRequestRoundTripsWhenTitleIsEmpty() {
+        UrlUploadRequest expected = new UrlUploadRequest("https://example.invalid/track", "", 42L);
+        FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
+
+        UrlUploadRequest.STREAM_CODEC.encode(buffer, expected);
+
+        assertEquals(expected, UrlUploadRequest.STREAM_CODEC.decode(buffer));
+        buffer.release();
+    }
 }
