@@ -17,7 +17,7 @@ sed -i 's/\r$//' "$target_dir/.env"
 
 service_token="$(sed -n 's/^CJD_SERVICE_TOKEN=//p' "$target_dir/.env")"
 if [[ -z "$service_token" || "$service_token" == "replace-with-a-long-random-value" ]]; then
-    openssl rand -hex 32 -out "$token_file"
+    openssl rand -out "$token_file" -hex 32
     IFS= read -r service_token < "$token_file"
     sed -i "s|^CJD_SERVICE_TOKEN=.*|CJD_SERVICE_TOKEN=$service_token|" "$target_dir/.env"
 fi
