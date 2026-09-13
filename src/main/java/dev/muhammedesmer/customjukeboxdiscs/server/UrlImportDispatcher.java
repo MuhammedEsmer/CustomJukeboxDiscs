@@ -15,17 +15,17 @@ final class UrlImportDispatcher {
         this.registry = Objects.requireNonNull(registry, "registry");
     }
 
-    CompletableFuture<UploadError> importTo(UrlImportRequest request, Supplier<UploadError> directDownload) {
+    CompletableFuture<Result> importTo(UrlImportRequest request, Supplier<UploadError> directDownload) {
         Objects.requireNonNull(request, "request");
         Objects.requireNonNull(directDownload, "directDownload");
         return registry.find(request.uri())
                 .map(importer -> importer.importTrack(request).thenApply(UrlImportDispatcher::map))
-                .orElseGet(() -> CompletableFuture.completedFuture(directDownload.get()))
-                .exceptionally(ignored -> UploadError.URL_FETCH_FAILED);
+                .orElseGet(() -> CompletableFuture.completedFuture(new Result(directDownload.get(), "")))
+                .exceptionally(ignored -> new Result(UploadError.URL_FETCH_FAILED, ""));
     }
 
-    private static UploadError map(UrlImportResult result) {
-        return switch (result.error()) {
+    private static Result map(UrlImportResult result) {
+        UploadError error = switch (result.error()) {
             case NONE -> UploadError.NONE;
             case UNSUPPORTED_MEDIA -> UploadError.URL_NOT_ALLOWED;
             case QUEUE_FULL -> UploadError.ANOTHER_UPLOAD_ACTIVE;
@@ -34,5 +34,13 @@ final class UrlImportDispatcher {
             case TIMED_OUT -> UploadError.TIMEOUT;
             case TOOLS_UNAVAILABLE, DOWNLOAD_FAILED, CONVERSION_FAILED -> UploadError.URL_FETCH_FAILED;
         };
+        return new Result(error, error == UploadError.NONE ? result.suggestedTitle() : "");
+    }
+
+    record Result(UploadError error, String suggestedTitle) {
+        Result {
+            Objects.requireNonNull(error, "error");
+            suggestedTitle = suggestedTitle == null ? "" : suggestedTitle;
+        }
     }
 }

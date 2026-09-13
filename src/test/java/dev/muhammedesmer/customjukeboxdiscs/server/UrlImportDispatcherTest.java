@@ -20,16 +20,17 @@ final class UrlImportDispatcherTest {
     void supportedUriUsesTheRegisteredImporter() {
         UrlImporterRegistry registry = new UrlImporterRegistry();
         AtomicBoolean imported = new AtomicBoolean();
-        registry.register(importer(imported, UrlImportResult.success()));
+        registry.register(importer(imported, UrlImportResult.success("Resolved title")));
         AtomicBoolean fetchedDirectly = new AtomicBoolean();
 
-        UploadError result = new UrlImportDispatcher(registry)
+        UrlImportDispatcher.Result result = new UrlImportDispatcher(registry)
                 .importTo(request(), () -> {
                     fetchedDirectly.set(true);
                     return UploadError.NONE;
                 }).join();
 
-        assertEquals(UploadError.NONE, result);
+        assertEquals(UploadError.NONE, result.error());
+        assertEquals("Resolved title", result.suggestedTitle());
         assertEquals(true, imported.get());
         assertEquals(false, fetchedDirectly.get());
     }
@@ -39,13 +40,14 @@ final class UrlImportDispatcherTest {
         UrlImporterRegistry registry = new UrlImporterRegistry();
         AtomicBoolean fetchedDirectly = new AtomicBoolean();
 
-        UploadError result = new UrlImportDispatcher(registry)
+        UrlImportDispatcher.Result result = new UrlImportDispatcher(registry)
                 .importTo(request(), () -> {
                     fetchedDirectly.set(true);
                     return UploadError.NONE;
                 }).join();
 
-        assertEquals(UploadError.NONE, result);
+        assertEquals(UploadError.NONE, result.error());
+        assertEquals("", result.suggestedTitle());
         assertEquals(true, fetchedDirectly.get());
     }
 
@@ -55,10 +57,10 @@ final class UrlImportDispatcherTest {
         registry.register(importer(new AtomicBoolean(),
                 UrlImportResult.failure(UrlImportResult.Error.TOO_LONG)));
 
-        UploadError result = new UrlImportDispatcher(registry)
+        UrlImportDispatcher.Result result = new UrlImportDispatcher(registry)
                 .importTo(request(), () -> UploadError.NONE).join();
 
-        assertEquals(UploadError.DURATION_LIMIT, result);
+        assertEquals(UploadError.DURATION_LIMIT, result.error());
     }
 
     @Test
@@ -67,10 +69,10 @@ final class UrlImportDispatcherTest {
         registry.register(importer(new AtomicBoolean(),
                 UrlImportResult.failure(UrlImportResult.Error.TIMED_OUT)));
 
-        UploadError result = new UrlImportDispatcher(registry)
+        UrlImportDispatcher.Result result = new UrlImportDispatcher(registry)
                 .importTo(request(), () -> UploadError.NONE).join();
 
-        assertEquals(UploadError.TIMEOUT, result);
+        assertEquals(UploadError.TIMEOUT, result.error());
     }
 
     private static UrlTrackImporter importer(AtomicBoolean imported, UrlImportResult result) {

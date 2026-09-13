@@ -16,8 +16,20 @@ public record UrlImportRequest(
         Duration maxDuration,
         long maxBytes,
         BooleanSupplier cancelled,
-        Consumer<Stage> progress) {
-    public enum Stage { QUEUED, DOWNLOADING, CONVERTING }
+        Consumer<Progress> progress) {
+    public enum Stage { QUEUED, RESOLVING, DOWNLOADING, WRITING }
+
+    public record Progress(Stage stage, int percent, String suggestedTitle) {
+        public Progress {
+            Objects.requireNonNull(stage, "stage");
+            suggestedTitle = suggestedTitle == null ? "" : suggestedTitle;
+            if (percent < -1 || percent > 100) throw new IllegalArgumentException("percent must be -1-100");
+        }
+
+        public static Progress indeterminate(Stage stage) {
+            return new Progress(stage, -1, "");
+        }
+    }
 
     public UrlImportRequest {
         Objects.requireNonNull(uri, "uri");

@@ -4,6 +4,19 @@ All notable changes to Custom Jukebox Discs. Versions follow [semantic versionin
 1.0.0 is reserved for the first release considered feature complete. Per-version notes for uploading
 live in `docs/changelogs/`.
 
+## 0.2.10
+
+### Changed
+
+- Link imports can now supply a track title automatically when the title field is left empty.
+- The Disc Writer now shows link resolution, real download percentage and disc-writing stages.
+- Successful writes keep the progress bar full and show the finished track name.
+
+### Fixed
+
+- Link imports no longer require users to invent a title before the provider has read the link.
+- Link-based writes no longer attempt to cache a nonexistent local source file on the client.
+
 ## 0.2.9
 
 ### Added

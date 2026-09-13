@@ -8,6 +8,7 @@ import dev.muhammedesmer.customjukeboxdiscs.network.payload.UploadChunk;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.UploadFinish;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.UploadResult;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.UrlUploadRequest;
+import dev.muhammedesmer.customjukeboxdiscs.network.payload.UrlImportProgress;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.DownloadChunk;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.JukeboxPlay;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.JukeboxStop;
@@ -47,13 +48,16 @@ public final class ClientUploadManager implements ModPayloads.ClientHandler {
     }
 
     /** Starts a link based write; the server does the downloading. */
-    public void beginFromUrl(String url, String title, long inputFingerprint, Consumer<Component> status) {
+    public void beginFromUrl(
+            String url, String title, long inputFingerprint, Consumer<Component> status,
+            DoubleConsumer progress, Consumer<String> resolvedTitle) {
         if (pending != null) {
             status.accept(Component.translatable("upload.customjukeboxdiscs.busy"));
             return;
         }
-        pending = new Pending(null, "", 0, AudioFormat.MP3, title, inputFingerprint, status, progress -> { });
-        status.accept(Component.translatable("upload.customjukeboxdiscs.fetching"));
+        pending = new Pending(
+                null, "", 0, AudioFormat.MP3, title, inputFingerprint, status, progress, resolvedTitle);
+        status.accept(Component.translatable("upload.customjukeboxdiscs.resolving"));
         PacketDistributor.sendToServer(new UrlUploadRequest(url, title, inputFingerprint));
     }
 
@@ -69,7 +73,8 @@ public final class ClientUploadManager implements ModPayloads.ClientHandler {
             try {
                 long size = Files.size(file);
                 String hash = sha256(file);
-                Pending upload = new Pending(file, hash, size, format(file), title, inputFingerprint, status, progress);
+                Pending upload = new Pending(
+                        file, hash, size, format(file), title, inputFingerprint, status, progress, ignored -> { });
                 pending = upload;
                 PacketDistributor.sendToServer(new UploadBeginRequest(
                         hash, size, upload.format, title, inputFingerprint));
@@ -131,14 +136,39 @@ public final class ClientUploadManager implements ModPayloads.ClientHandler {
     public void handle(UploadResult result, IPayloadContext context) {
         Pending current = pending;
         if (current != null) {
-            if (result.error() == UploadError.NONE) {
+            if (result.error() == UploadError.NONE && current.file != null) {
                 ClientPlaybackManager.INSTANCE.cacheLocal(current.file, result.track());
             }
             finishStatus(current, result.error() == UploadError.NONE
-                    ? Component.translatable("upload.customjukeboxdiscs.complete")
+                    ? Component.translatable(
+                            "upload.customjukeboxdiscs.complete_named", result.track().title())
                     : Component.translatable("upload.customjukeboxdiscs.failed",
-                            Component.translatable(result.error().translationKey())));
+                            Component.translatable(result.error().translationKey())),
+                    result.error() == UploadError.NONE);
         }
+    }
+
+    @Override
+    public void handle(UrlImportProgress update, IPayloadContext context) {
+        Pending current = pending;
+        if (current == null || current.file != null) return;
+        Minecraft.getInstance().execute(() -> {
+            if (pending != current) return;
+            if (!update.suggestedTitle().isBlank()) current.resolvedTitle.accept(update.suggestedTitle());
+            switch (update.stage()) {
+                case RESOLVING -> current.status.accept(Component.translatable("upload.customjukeboxdiscs.resolving"));
+                case DOWNLOADING -> {
+                    if (update.percent() >= 0) {
+                        current.status.accept(Component.translatable(
+                                "upload.customjukeboxdiscs.downloading", update.percent()));
+                        current.progress.accept(update.percent() / 100.0);
+                    } else {
+                        current.status.accept(Component.translatable("upload.customjukeboxdiscs.fetching"));
+                    }
+                }
+                case WRITING -> current.status.accept(Component.translatable("upload.customjukeboxdiscs.writing"));
+            }
+        });
     }
 
     @Override public void handle(JukeboxPlay payload, IPayloadContext context) { context.enqueueWork(() -> ClientPlaybackManager.INSTANCE.play(payload)); }
@@ -161,10 +191,14 @@ public final class ClientUploadManager implements ModPayloads.ClientHandler {
     }
 
     private void finishStatus(Pending current, Component message) {
+        finishStatus(current, message, false);
+    }
+
+    private void finishStatus(Pending current, Component message, boolean successful) {
         pending = null;
         Minecraft.getInstance().execute(() -> {
             current.status.accept(message);
-            current.progress.accept(0.0);
+            current.progress.accept(successful ? 1.0 : 0.0);
         });
     }
 
@@ -189,6 +223,6 @@ public final class ClientUploadManager implements ModPayloads.ClientHandler {
 
     private record Pending(
             Path file, String hash, long size, AudioFormat format, String title, long inputFingerprint,
-            Consumer<Component> status, DoubleConsumer progress) {
+            Consumer<Component> status, DoubleConsumer progress, Consumer<String> resolvedTitle) {
     }
 }

@@ -150,14 +150,15 @@ public final class DiscWriterScreen extends AbstractContainerScreen<DiscWriterMe
         }
         String url = urlBox.getValue().strip();
         String sanitized = UploadFileScanner.sanitizeTitle(titleBox.getValue());
-        if (sanitized.isEmpty()) {
+        if (sanitized.isEmpty() && url.isEmpty()) {
             status = Component.translatable("screen.customjukeboxdiscs.disc_writer.empty_title")
                     .withStyle(ChatFormatting.RED);
             return;
         }
         progress = 0.0F;
         if (!url.isEmpty()) {
-            ClientUploadManager.INSTANCE.beginFromUrl(url, sanitized, menu.inputFingerprint(), this::onStatus);
+            ClientUploadManager.INSTANCE.beginFromUrl(
+                    url, sanitized, menu.inputFingerprint(), this::onStatus, this::onProgress, this::onResolvedTitle);
             return;
         }
         if (files.isEmpty()) {
@@ -175,6 +176,10 @@ public final class DiscWriterScreen extends AbstractContainerScreen<DiscWriterMe
 
     private void onProgress(double value) {
         progress = (float) value;
+    }
+
+    private void onResolvedTitle(String title) {
+        if (titleBox.getValue().isBlank()) titleBox.setValue(title);
     }
 
     private void refreshFiles() {

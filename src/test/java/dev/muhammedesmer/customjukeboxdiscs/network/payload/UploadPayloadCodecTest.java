@@ -67,4 +67,18 @@ final class UploadPayloadCodecTest {
         assertEquals(result, UploadResult.STREAM_CODEC.decode(buffer));
         buffer.release();
     }
+
+    @Test
+    void linkImportProgressRoundTripsStagePercentageAndTitle() {
+        UrlImportProgress expected = new UrlImportProgress(
+                UrlImportProgress.Stage.DOWNLOADING, 42, "Billie Eilish - WILDFLOWER");
+        FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
+
+        UrlImportProgress.STREAM_CODEC.encode(buffer, expected);
+
+        assertEquals(expected, UrlImportProgress.STREAM_CODEC.decode(buffer));
+        assertThrows(IllegalArgumentException.class,
+                () -> new UrlImportProgress(UrlImportProgress.Stage.DOWNLOADING, 101, ""));
+        buffer.release();
+    }
 }

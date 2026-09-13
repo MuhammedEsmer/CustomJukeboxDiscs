@@ -10,6 +10,7 @@ import dev.muhammedesmer.customjukeboxdiscs.network.payload.UploadChunk;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.UploadFinish;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.UploadResult;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.UrlUploadRequest;
+import dev.muhammedesmer.customjukeboxdiscs.network.payload.UrlImportProgress;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.DownloadChunk;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.JukeboxPlay;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.JukeboxStop;
@@ -59,6 +60,8 @@ public final class ModPayloads {
         registrar.playToClient(UploadBeginResponse.TYPE, UploadBeginResponse.STREAM_CODEC,
                 (payload, context) -> clientHandler.handle(payload, context));
         registrar.playToClient(UploadResult.TYPE, UploadResult.STREAM_CODEC,
+                (payload, context) -> clientHandler.handle(payload, context));
+        registrar.playToClient(UrlImportProgress.TYPE, UrlImportProgress.STREAM_CODEC,
                 (payload, context) -> clientHandler.handle(payload, context));
         registrar.playToClient(JukeboxPlay.TYPE, JukeboxPlay.STREAM_CODEC,
                 (payload, context) -> clientHandler.handle(payload, context));
@@ -136,6 +139,8 @@ public final class ModPayloads {
             public void handle(UploadResult payload, IPayloadContext context) {
             }
 
+            @Override public void handle(UrlImportProgress payload, IPayloadContext context) { }
+
             @Override public void handle(JukeboxPlay payload, IPayloadContext context) { }
             @Override public void handle(JukeboxStop payload, IPayloadContext context) { }
             @Override public void handle(TrackBegin payload, IPayloadContext context) { }
@@ -148,6 +153,8 @@ public final class ModPayloads {
         void handle(UploadBeginResponse payload, IPayloadContext context);
 
         void handle(UploadResult payload, IPayloadContext context);
+
+        void handle(UrlImportProgress payload, IPayloadContext context);
 
         void handle(JukeboxPlay payload, IPayloadContext context);
         void handle(JukeboxStop payload, IPayloadContext context);

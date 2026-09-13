@@ -16,6 +16,8 @@ import dev.muhammedesmer.customjukeboxdiscs.network.payload.UploadChunk;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.UploadFinish;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.UploadResult;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.UrlUploadRequest;
+import dev.muhammedesmer.customjukeboxdiscs.network.payload.UrlImportProgress;
+import dev.muhammedesmer.customjukeboxdiscs.content.disc.TitleSanitizer;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.DownloadChunk;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.JukeboxPlay;
 import dev.muhammedesmer.customjukeboxdiscs.network.payload.JukeboxStop;
@@ -284,7 +286,7 @@ public final class ServerRuntime implements ModPayloads.ServerHandler {
                     () -> writer.inputFingerprint() != fingerprint
                             || !(player.containerMenu instanceof DiscWriterMenu open)
                             || open.writer() != writer,
-                    ignored -> { });
+                    progress -> server.execute(() -> send(player, progressPayload(progress))));
             new UrlImportDispatcher(UrlImporterRegistry.INSTANCE)
                     .importTo(request, () -> fetcher.download(payload.url(), temporary, maxBytes))
                     .thenAccept(downloaded -> finishUrlImport(
@@ -294,7 +296,7 @@ public final class ServerRuntime implements ModPayloads.ServerHandler {
     }
 
     private void finishUrlImport(
-            UploadError downloaded,
+            UrlImportDispatcher.Result downloaded,
             ServerPlayer player,
             DiscWriterMenu menu,
             DiscWriterBlockEntity writer,
@@ -304,12 +306,16 @@ public final class ServerRuntime implements ModPayloads.ServerHandler {
             String title,
             String uploaderName,
             java.nio.file.Path temporary) {
-        if (downloaded != UploadError.NONE) {
+        if (downloaded.error() != UploadError.NONE) {
             try { Files.deleteIfExists(temporary); } catch (java.io.IOException ignored) { }
-            server.execute(() -> send(player, new UploadResult(downloaded, null)));
+            server.execute(() -> send(player, new UploadResult(downloaded.error(), null)));
             return;
         }
-        uploads.ingestDownloaded(playerId, permissionLevel, title, uploaderName, temporary,
+        String resolvedTitle = TitleSanitizer.sanitize(
+                title.isBlank() ? downloaded.suggestedTitle() : title);
+        server.execute(() -> send(player, new UrlImportProgress(
+                UrlImportProgress.Stage.WRITING, 100, resolvedTitle)));
+        uploads.ingestDownloaded(playerId, permissionLevel, resolvedTitle, uploaderName, temporary,
                         () -> writer.inputFingerprint() == fingerprint
                                 && player.containerMenu instanceof DiscWriterMenu open
                                 && open == menu
@@ -323,6 +329,16 @@ public final class ServerRuntime implements ModPayloads.ServerHandler {
                     send(player, new UploadResult(
                             finalError, finalError == UploadError.NONE ? result.track() : null));
                 }));
+    }
+
+    private static UrlImportProgress progressPayload(UrlImportRequest.Progress progress) {
+        UrlImportProgress.Stage stage = switch (progress.stage()) {
+            case QUEUED, RESOLVING -> UrlImportProgress.Stage.RESOLVING;
+            case DOWNLOADING -> UrlImportProgress.Stage.DOWNLOADING;
+            case WRITING -> UrlImportProgress.Stage.WRITING;
+        };
+        return new UrlImportProgress(
+                stage, progress.percent(), TitleSanitizer.sanitize(progress.suggestedTitle()));
     }
 
     @Override
