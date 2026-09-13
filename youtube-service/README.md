@@ -28,3 +28,5 @@ npm start
 ```
 
 Run it under the VDS process manager so it starts independently of Minecraft. Keep the default localhost bind when the service and Minecraft server are on the same machine.
+
+The included `deploy/customjukeboxdiscs-youtube.service` unit runs it automatically with systemd.
