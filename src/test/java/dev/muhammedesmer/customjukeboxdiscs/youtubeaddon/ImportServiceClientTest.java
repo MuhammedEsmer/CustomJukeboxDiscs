@@ -29,6 +29,9 @@ final class ImportServiceClientTest {
             assertEquals("POST", exchange.getRequestMethod());
             exchange.getRequestBody().readAllBytes();
             exchange.getResponseHeaders().set("Content-Type", "audio/mpeg");
+            exchange.getResponseHeaders().set("X-CJD-Track-Title-B64",
+                    java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(
+                            "Billie Eilish - WILDFLOWER".getBytes(StandardCharsets.UTF_8)));
             exchange.sendResponseHeaders(200, audio.length);
             exchange.getResponseBody().write(audio);
         })) {
@@ -37,7 +40,25 @@ final class ImportServiceClientTest {
             UrlImportResult result = client(server, "secret").importTrack("xAWDqdpOlu8", request(destination));
 
             assertEquals(UrlImportResult.Error.NONE, result.error());
+            assertEquals("Billie Eilish - WILDFLOWER", result.suggestedTitle());
             assertEquals("fake mp3", Files.readString(destination));
+        }
+    }
+
+    @Test
+    void reportsDownloadedBytePercentage() throws Exception {
+        byte[] audio = "12345678".getBytes(StandardCharsets.UTF_8);
+        try (TestServer server = server((exchange) -> {
+            exchange.getRequestBody().readAllBytes();
+            exchange.sendResponseHeaders(200, audio.length);
+            exchange.getResponseBody().write(audio);
+        })) {
+            java.util.List<Integer> percentages = new java.util.ArrayList<>();
+            UrlImportRequest request = request(temporaryDirectory.resolve("track.part"), 1024, percentages);
+
+            client(server, "secret").importTrack("xAWDqdpOlu8", request);
+
+            assertEquals(100, percentages.getLast());
         }
     }
 
@@ -83,6 +104,10 @@ final class ImportServiceClientTest {
     }
 
     private UrlImportRequest request(Path destination, long maxBytes) {
+        return request(destination, maxBytes, new java.util.ArrayList<>());
+    }
+
+    private UrlImportRequest request(Path destination, long maxBytes, java.util.List<Integer> percentages) {
         return new UrlImportRequest(
                 URI.create("https://www.youtube.com/watch?v=xAWDqdpOlu8"),
                 destination,
@@ -91,7 +116,7 @@ final class ImportServiceClientTest {
                 Duration.ofSeconds(600),
                 maxBytes,
                 () -> false,
-                ignored -> { });
+                update -> percentages.add(update.percent()));
     }
 
     private static TestServer server(com.sun.net.httpserver.HttpHandler handler) throws Exception {

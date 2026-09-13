@@ -4,7 +4,7 @@ license="MIT"
 
 [[mods]]
 modId="customjukeboxdiscsyoutube"
-version="0.2.0"
+version="0.2.1"
 displayName="Custom Jukebox Discs: YouTube Addon"
 authors="HooDoo"
 description='''Adds server-side YouTube imports to the Custom Jukebox Discs Disc Writer.'''
@@ -26,6 +26,6 @@ side="SERVER"
 [[dependencies.customjukeboxdiscsyoutube]]
 modId="customjukeboxdiscs"
 type="required"
-versionRange="[0.2.9,)"
+versionRange="[0.2.10,)"
 ordering="AFTER"
 side="SERVER"

@@ -16,6 +16,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.util.Objects;
+import java.util.Base64;
 
 public final class ImportServiceClient implements TrackImportClient {
     private final URI endpoint;
@@ -40,7 +41,7 @@ public final class ImportServiceClient implements TrackImportClient {
         Path staged = Path.of(request.destination().toAbsolutePath() + ".mp3");
         try {
             if (request.cancelled().getAsBoolean()) return failure(UrlImportResult.Error.CANCELLED);
-            request.progress().accept(UrlImportRequest.Stage.DOWNLOADING);
+            request.progress().accept(UrlImportRequest.Progress.indeterminate(UrlImportRequest.Stage.RESOLVING));
             HttpRequest httpRequest = HttpRequest.newBuilder(endpoint)
                     .timeout(shorter(timeout, request.timeout()))
                     .header("Authorization", "Bearer " + token)
@@ -55,10 +56,14 @@ public final class ImportServiceClient implements TrackImportClient {
             }
             long declaredSize = response.headers().firstValueAsLong("Content-Length").orElse(-1L);
             if (declaredSize > request.maxBytes()) return failure(UrlImportResult.Error.TOO_LONG);
-            UrlImportResult copied = copyBounded(response.body(), staged, request);
+            String suggestedTitle = response.headers().firstValue("X-CJD-Track-Title-B64")
+                    .map(ImportServiceClient::decodeTitle).orElse("");
+            request.progress().accept(new UrlImportRequest.Progress(
+                    UrlImportRequest.Stage.DOWNLOADING, 0, suggestedTitle));
+            UrlImportResult copied = copyBounded(response.body(), staged, request, declaredSize, suggestedTitle);
             if (copied.error() != UrlImportResult.Error.NONE) return copied;
             Files.move(staged, request.destination(), StandardCopyOption.REPLACE_EXISTING);
-            return UrlImportResult.success();
+            return UrlImportResult.success(suggestedTitle);
         } catch (HttpTimeoutException exception) {
             return failure(UrlImportResult.Error.TIMED_OUT);
         } catch (InterruptedException exception) {
@@ -76,7 +81,8 @@ public final class ImportServiceClient implements TrackImportClient {
         }
     }
 
-    private static UrlImportResult copyBounded(InputStream source, Path staged, UrlImportRequest request)
+    private static UrlImportResult copyBounded(
+            InputStream source, Path staged, UrlImportRequest request, long declaredSize, String suggestedTitle)
             throws IOException {
         try (source; var output = Files.newOutputStream(staged)) {
             byte[] buffer = new byte[16 * 1024];
@@ -87,9 +93,20 @@ public final class ImportServiceClient implements TrackImportClient {
                 total += read;
                 if (total > request.maxBytes()) return failure(UrlImportResult.Error.TOO_LONG);
                 output.write(buffer, 0, read);
+                int percent = declaredSize > 0 ? (int) Math.min(100L, total * 100L / declaredSize) : -1;
+                request.progress().accept(new UrlImportRequest.Progress(
+                        UrlImportRequest.Stage.DOWNLOADING, percent, suggestedTitle));
             }
         }
         return UrlImportResult.success();
+    }
+
+    private static String decodeTitle(String encoded) {
+        try {
+            return new String(Base64.getUrlDecoder().decode(encoded), java.nio.charset.StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException exception) {
+            return "";
+        }
     }
 
     private static String body(String videoId, UrlImportRequest request) {

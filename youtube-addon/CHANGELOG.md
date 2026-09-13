@@ -1,5 +1,13 @@
 # Custom Jukebox Discs: YouTube Addon Changelog
 
+## 0.2.1 — NeoForge 1.21.1
+
+### Changed
+
+- Uses the resolved video title when the Disc Writer title field is empty.
+- Reports real download progress to the Disc Writer.
+- Requires Custom Jukebox Discs 0.2.10 or newer.
+
 ## 0.2.0 — NeoForge 1.21.1
 
 ### Changed
