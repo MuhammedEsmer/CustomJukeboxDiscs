@@ -4,7 +4,6 @@ import dev.muhammedesmer.customjukeboxdiscs.api.url.UrlImporterRegistry;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 
@@ -15,11 +14,11 @@ public final class CustomJukeboxDiscsYouTube {
 
     public CustomJukeboxDiscsYouTube(ModContainer container) {
         container.registerConfig(ModConfig.Type.SERVER, YouTubeConfig.SPEC, "customjukeboxdiscs-youtube-server.toml");
-        ManagedToolInstaller installer = new ManagedToolInstaller(
-                FMLPaths.CONFIGDIR.get().resolve("customjukeboxdiscs-youtube").resolve("tools"));
         importer = new YouTubeImporter(
-                () -> installer.resolve(YouTubeConfig.INSTANCE.snapshot()),
-                new ProcessCommandRunner(),
+                () -> {
+                    YouTubeConfig.Snapshot config = YouTubeConfig.INSTANCE.snapshot();
+                    return new ImportServiceClient(config.serviceUrl(), config.serviceToken(), config.timeout());
+                },
                 8,
                 () -> YouTubeConfig.INSTANCE.snapshot().enabled());
         UrlImporterRegistry.INSTANCE.register(importer);

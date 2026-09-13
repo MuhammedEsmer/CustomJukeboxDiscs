@@ -1,5 +1,7 @@
 package dev.hoodoo.customjukeboxdiscs.youtube;
 
+import java.net.URI;
+import java.time.Duration;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 public final class YouTubeConfig {
@@ -7,9 +9,9 @@ public final class YouTubeConfig {
     public static final YouTubeConfig INSTANCE;
 
     private final ModConfigSpec.BooleanValue enabled;
-    private final ModConfigSpec.BooleanValue managedTools;
-    private final ModConfigSpec.ConfigValue<String> ytDlpPath;
-    private final ModConfigSpec.ConfigValue<String> ffmpegPath;
+    private final ModConfigSpec.ConfigValue<String> serviceUrl;
+    private final ModConfigSpec.ConfigValue<String> serviceToken;
+    private final ModConfigSpec.IntValue requestTimeoutMillis;
     private final ModConfigSpec.IntValue maxQueuedJobs;
 
     static {
@@ -21,19 +23,19 @@ public final class YouTubeConfig {
     private YouTubeConfig(ModConfigSpec.Builder builder) {
         enabled = builder.define("enabled", true);
         maxQueuedJobs = builder.defineInRange("maxQueuedJobs", 8, 1, 64);
-        builder.push("tools");
-        managedTools = builder
-                .comment("Download verified yt-dlp and FFmpeg builds when explicit paths are empty.")
-                .define("managedDownloads", true);
-        ytDlpPath = builder.define("ytDlpPath", "");
-        ffmpegPath = builder.define("ffmpegPath", "");
+        builder.push("service");
+        serviceUrl = builder.define("url", "http://127.0.0.1:8765/v1/import");
+        serviceToken = builder.define("token", "");
+        requestTimeoutMillis = builder.defineInRange("timeoutMillis", 120000, 1000, 600000);
         builder.pop();
     }
 
     public Snapshot snapshot() {
-        return new Snapshot(enabled.get(), managedTools.get(), ytDlpPath.get(), ffmpegPath.get(), maxQueuedJobs.get());
+        return new Snapshot(
+                enabled.get(), URI.create(serviceUrl.get()), serviceToken.get(),
+                Duration.ofMillis(requestTimeoutMillis.get()), maxQueuedJobs.get());
     }
 
-    public record Snapshot(boolean enabled, boolean managedTools, String ytDlpPath, String ffmpegPath, int maxQueuedJobs) {
+    public record Snapshot(boolean enabled, URI serviceUrl, String serviceToken, Duration timeout, int maxQueuedJobs) {
     }
 }

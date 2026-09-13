@@ -2,16 +2,13 @@ package dev.muhammedesmer.customjukeboxdiscs.youtubeaddon;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import dev.hoodoo.customjukeboxdiscs.youtube.CommandRunner;
-import dev.hoodoo.customjukeboxdiscs.youtube.PlatformTools;
+import dev.hoodoo.customjukeboxdiscs.youtube.TrackImportClient;
 import dev.hoodoo.customjukeboxdiscs.youtube.YouTubeImporter;
 import dev.muhammedesmer.customjukeboxdiscs.api.url.UrlImportRequest;
 import dev.muhammedesmer.customjukeboxdiscs.api.url.UrlImportResult;
 import java.net.URI;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -22,8 +19,8 @@ final class YouTubeImporterTest {
 
     @Test
     void rejectsVideosLongerThanTheRequestLimit() {
-        YouTubeImporter importer = importer((command, timeout, cancelled) ->
-                new CommandRunner.Result(0, "{\"duration\":601,\"is_live\":false}"));
+        YouTubeImporter importer = importer((videoId, request) ->
+                UrlImportResult.failure(UrlImportResult.Error.TOO_LONG));
 
         UrlImportResult result = importer.importTrack(request()).join();
 
@@ -31,53 +28,29 @@ final class YouTubeImporterTest {
     }
 
     @Test
-    void downloadsValidatedVideoAudioToTheRequestedDestination() throws Exception {
-        CommandRunner runner = (command, timeout, cancelled) -> {
-            if (command.contains("--dump-single-json")) {
-                return new CommandRunner.Result(0, "{\"duration\":120,\"is_live\":false}");
-            }
-            int output = command.indexOf("--output") + 1;
-            Files.writeString(Path.of(command.get(output).replace("%(ext)s", "mp3")), "fake mp3");
-            return new CommandRunner.Result(0, "");
-        };
-        YouTubeImporter importer = importer(runner);
+    void delegatesCanonicalVideoIdToServiceClient() {
+        String[] received = new String[1];
+        YouTubeImporter importer = importer((videoId, request) -> {
+            received[0] = videoId;
+            return UrlImportResult.success();
+        });
 
         UrlImportResult result = importer.importTrack(request()).join();
 
         assertEquals(UrlImportResult.Error.NONE, result.error());
-        assertEquals("fake mp3", Files.readString(temporaryDirectory.resolve("track.part")));
+        assertEquals("dQw4w9WgXcQ", received[0]);
     }
 
     @Test
-    void failedConversionRemovesPartialDownloadFiles() throws Exception {
-        CommandRunner runner = (command, timeout, cancelled) -> {
-            if (command.contains("--dump-single-json")) {
-                return new CommandRunner.Result(0, "{\"duration\":120,\"is_live\":false}");
-            }
-            int output = command.indexOf("--output") + 1;
-            Files.writeString(Path.of(command.get(output).replace("%(ext)s", "webm")), "partial");
-            return new CommandRunner.Result(1, "conversion failed");
-        };
+    void preservesServiceFailure() {
+        UrlImportResult result = importer((videoId, request) ->
+                UrlImportResult.failure(UrlImportResult.Error.DOWNLOAD_FAILED)).importTrack(request()).join();
 
-        UrlImportResult result = importer(runner).importTrack(request()).join();
-
-        assertEquals(UrlImportResult.Error.CONVERSION_FAILED, result.error());
-        assertEquals(0L, Files.list(temporaryDirectory).count());
+        assertEquals(UrlImportResult.Error.DOWNLOAD_FAILED, result.error());
     }
 
-    @Test
-    void reportsCommandTimeoutSeparatelyFromDownloadFailure() {
-        YouTubeImporter importer = importer((command, timeout, cancelled) ->
-                new CommandRunner.Result(-1, ""));
-
-        UrlImportResult result = importer.importTrack(request()).join();
-
-        assertEquals(UrlImportResult.Error.TIMED_OUT, result.error());
-    }
-
-    private YouTubeImporter importer(CommandRunner runner) {
-        return new YouTubeImporter(
-                () -> new PlatformTools(Path.of("yt-dlp"), Path.of("ffmpeg")), runner, 8);
+    private YouTubeImporter importer(TrackImportClient client) {
+        return new YouTubeImporter(() -> client, 8);
     }
 
     private UrlImportRequest request() {
