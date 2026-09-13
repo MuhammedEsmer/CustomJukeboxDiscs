@@ -35,7 +35,19 @@ final class LibraryPayloadCodecTest {
 
     @Test
     void writeRequest_InvalidHash_ThrowsIllegalArgumentException() {
-        assertThrows(IllegalArgumentException.class, () -> new LibraryWriteRequest("A".repeat(64), 1L));
+        assertThrows(IllegalArgumentException.class, () -> new LibraryWriteRequest("A".repeat(64)));
+    }
+
+    @Test
+    void streamCodec_LibraryWriteRequest_RoundTripsWithoutClientFingerprint() {
+        LibraryWriteRequest expected = new LibraryWriteRequest("a".repeat(64));
+        FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
+
+        LibraryWriteRequest.STREAM_CODEC.encode(buffer, expected);
+        LibraryWriteRequest actual = LibraryWriteRequest.STREAM_CODEC.decode(buffer);
+
+        assertEquals(expected, actual);
+        buffer.release();
     }
 
     private static TrackReference track(String seed) {
