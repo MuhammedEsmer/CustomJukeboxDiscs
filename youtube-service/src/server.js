@@ -25,15 +25,17 @@ export function createImportServer({ token, provider, maxConcurrent = 2 }) {
       const input = validate(await readJson(request));
       active += 1;
       try {
-        const audio = await provider(input);
-        if (!Buffer.isBuffer(audio)) throw new ServiceError("provider_failed", 502);
-        if (audio.length > input.maxBytes) throw new ServiceError("too_large", 413);
+        const result = await provider(input);
+        if (!result || !Buffer.isBuffer(result.audio)) throw new ServiceError("provider_failed", 502);
+        if (result.audio.length > input.maxBytes) throw new ServiceError("too_large", 413);
+        const title = Buffer.from(String(result.title || ""), "utf8").toString("base64url");
         response.writeHead(200, {
           "content-type": "audio/mpeg",
-          "content-length": audio.length,
+          "content-length": result.audio.length,
+          "x-cjd-track-title-b64": title,
           "cache-control": "no-store"
         });
-        response.end(audio);
+        response.end(result.audio);
       } finally {
         active -= 1;
       }

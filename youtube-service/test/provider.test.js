@@ -9,7 +9,7 @@ function response(status, body, headers = {}) {
 test("resolves metadata, polls conversion, and downloads bounded MP3", async () => {
   const calls = [];
   const replies = [
-    response(200, JSON.stringify({ lengthSeconds: "288" }), { "content-type": "application/json" }),
+    response(200, JSON.stringify({ lengthSeconds: "288", title: "Billie Eilish - WILDFLOWER" }), { "content-type": "application/json" }),
     response(200, JSON.stringify({ status: "processing" }), { "content-type": "application/json" }),
     response(200, JSON.stringify({ status: "ok", link: "https://audio.example/track.mp3" }), { "content-type": "application/json" }),
     response(200, "fake mp3", { "content-length": "8" })
@@ -24,9 +24,10 @@ test("resolves metadata, polls conversion, and downloads bounded MP3", async () 
     sleep: async () => {}
   });
 
-  const audio = await provider({ videoId: "xAWDqdpOlu8", maxBytes: 1024, maxDurationSeconds: 600 });
+  const result = await provider({ videoId: "xAWDqdpOlu8", maxBytes: 1024, maxDurationSeconds: 600 });
 
-  assert.equal(audio.toString(), "fake mp3");
+  assert.equal(result.audio.toString(), "fake mp3");
+  assert.equal(result.title, "Billie Eilish - WILDFLOWER");
   assert.equal(calls.length, 4);
   assert.match(calls[0].url, /video\/info\?id=xAWDqdpOlu8$/);
   assert.match(calls[1].url, /youtube-mp36/);

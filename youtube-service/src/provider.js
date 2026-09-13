@@ -37,7 +37,7 @@ export function createRapidApiProvider({ apiKey, username, fetchImpl = fetch, sl
     if (!response.ok) throw new ServiceError("provider_failed", 502);
     const declared = Number(response.headers.get("content-length"));
     if (Number.isFinite(declared) && declared > maxBytes) throw new ServiceError("too_large", 413);
-    return readBounded(response.body, maxBytes);
+    return { audio: await readBounded(response.body, maxBytes), title: String(metadata.title || "") };
   };
 }
 

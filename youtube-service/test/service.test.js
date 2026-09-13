@@ -53,14 +53,15 @@ test("rejects malformed YouTube video ids before calling the provider", async ()
   });
 });
 
-test("returns provider MP3 bytes", async () => {
+test("returns provider MP3 bytes and resolved title", async () => {
   await withServer(async (request) => {
     assert.deepEqual(request, validRequest);
-    return Buffer.from("fake mp3");
+    return { audio: Buffer.from("fake mp3"), title: "Billie Eilish - WILDFLOWER" };
   }, async (url) => {
     const response = await request(url, validRequest);
     assert.equal(response.status, 200);
     assert.equal(response.headers.get("content-type"), "audio/mpeg");
+    assert.equal(response.headers.get("x-cjd-track-title-b64"), "QmlsbGllIEVpbGlzaCAtIFdJTERGTE9XRVI");
     assert.equal(await response.text(), "fake mp3");
   });
 });
