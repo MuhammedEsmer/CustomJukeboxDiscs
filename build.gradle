@@ -217,7 +217,7 @@ tasks.register('youtubeAddonJar', Jar) {
     dependsOn tasks.named('youtubeAddonClasses')
     from sourceSets.youtubeAddon.output
     archiveBaseName = 'customjukeboxdiscs-youtube-1.21.1'
-    archiveVersion = '0.1.0'
+    archiveVersion = '0.2.0'
 }
 
 tasks.register('archiveYouTubeAddon', Copy) {

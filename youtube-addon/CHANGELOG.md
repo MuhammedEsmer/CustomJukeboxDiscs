@@ -1,5 +1,19 @@
 # Custom Jukebox Discs: YouTube Addon Changelog
 
+## 0.2.0 — NeoForge 1.21.1
+
+### Changed
+
+- Moved YouTube resolution out of the Minecraft process into the private companion service.
+- Replaced managed `yt-dlp` and FFmpeg downloads with an authenticated localhost HTTP connection.
+- Added bounded MP3 transfer and clearer handling for service limits, queue pressure and timeouts.
+
+### Server setup
+
+- The addon remains server-side and requires Custom Jukebox Discs 0.2.9 or newer.
+- The companion service requires the administrator's own RapidAPI credentials and shared service token.
+- Players do not install the addon or service.
+
 ## 0.1.0 — NeoForge 1.21.1
 
 ### Added
