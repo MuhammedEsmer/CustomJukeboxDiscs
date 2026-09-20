@@ -17,7 +17,7 @@ public final class AccessPolicyData extends SavedData {
             .xmap(HashSet::new, ArrayList::new);
 
     public static final Codec<AccessPolicyData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            AccessMode.CODEC.optionalFieldOf("mode", AccessMode.OPS).forGetter(AccessPolicyData::mode),
+            AccessMode.CODEC.optionalFieldOf("mode", AccessMode.EVERYONE).forGetter(AccessPolicyData::mode),
             UUID_SET_CODEC.optionalFieldOf("allowed_players", Set.of()).forGetter(AccessPolicyData::allowedPlayers),
             UUID_SET_CODEC.optionalFieldOf("denied_players", Set.of()).forGetter(AccessPolicyData::deniedPlayers)
     ).apply(instance, AccessPolicyData::new));
@@ -27,7 +27,7 @@ public final class AccessPolicyData extends SavedData {
     private final Set<UUID> deniedPlayers;
 
     public AccessPolicyData() {
-        this(AccessMode.OPS, Set.of(), Set.of());
+        this(AccessMode.EVERYONE, Set.of(), Set.of());
     }
 
     private AccessPolicyData(AccessMode mode, Set<UUID> allowedPlayers, Set<UUID> deniedPlayers) {

@@ -13,7 +13,7 @@ import net.minecraftforge.common.util.Constants;
 public final class AccessPolicySavedData extends WorldSavedData {
     public static final String DATA_NAME = "customjukeboxdiscs_access";
 
-    private AccessMode mode = AccessMode.OPS;
+    private AccessMode mode = AccessMode.EVERYONE;
     private final Set<UUID> allowedPlayers = new HashSet<>();
     private final Set<UUID> deniedPlayers = new HashSet<>();
 
@@ -75,7 +75,7 @@ public final class AccessPolicySavedData extends WorldSavedData {
         if (nbt.hasKey("mode")) {
             mode = AccessMode.fromSerializedName(nbt.getString("mode"));
         } else {
-            mode = AccessMode.OPS;
+            mode = AccessMode.EVERYONE;
         }
 
         if (nbt.hasKey("allowed_players", Constants.NBT.TAG_LIST)) {

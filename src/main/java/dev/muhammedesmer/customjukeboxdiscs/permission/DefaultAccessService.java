@@ -14,7 +14,7 @@ public final class DefaultAccessService implements AccessService {
 
     @Override
     public AccessDecision mayUpload(AccessSubject subject) {
-        if (subject.console()) {
+        if (subject.console() || subject.singleplayerOwner()) {
             return AccessDecision.allowedDecision();
         }
         if (policy.deniedPlayers().contains(subject.playerId())) {

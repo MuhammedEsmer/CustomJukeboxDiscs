@@ -69,7 +69,12 @@ public final class UploadManager {
     }
 
     public synchronized BeginUploadResult begin(UUID playerId, int permissionLevel, BeginUpload request) {
-        AccessDecision access = accessService.mayUpload(AccessSubject.player(playerId, permissionLevel));
+        return begin(AccessSubject.player(playerId, permissionLevel), request);
+    }
+
+    public synchronized BeginUploadResult begin(AccessSubject subject, BeginUpload request) {
+        UUID playerId = subject.playerId();
+        AccessDecision access = accessService.mayUpload(subject);
         if (!access.allowed()) {
             return BeginUploadResult.failed(access.reason() == AccessDecision.Reason.DENIED
                     ? UploadError.DENIED_PLAYER
@@ -304,7 +309,15 @@ public final class UploadManager {
     public CompletableFuture<FinishUploadResult> ingestDownloaded(
             UUID playerId, int permissionLevel, String rawTitle, String uploaderName,
             Path temporary, BooleanSupplier beforeCommit) {
-        AccessDecision access = accessService.mayUpload(AccessSubject.player(playerId, permissionLevel));
+        return ingestDownloaded(AccessSubject.player(playerId, permissionLevel), rawTitle, uploaderName,
+                temporary, beforeCommit);
+    }
+
+    public CompletableFuture<FinishUploadResult> ingestDownloaded(
+            AccessSubject subject, String rawTitle, String uploaderName,
+            Path temporary, BooleanSupplier beforeCommit) {
+        UUID playerId = subject.playerId();
+        AccessDecision access = accessService.mayUpload(subject);
         if (!access.allowed()) {
             deleteQuietly(temporary);
             return CompletableFuture.completedFuture(FinishUploadResult.failed(

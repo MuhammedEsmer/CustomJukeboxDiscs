@@ -25,6 +25,7 @@ import dev.muhammedesmer.customjukeboxdiscs.network.payload.TrackUnavailable;
 import dev.muhammedesmer.customjukeboxdiscs.permission.AccessPolicyData;
 import dev.muhammedesmer.customjukeboxdiscs.permission.DefaultAccessService;
 import dev.muhammedesmer.customjukeboxdiscs.permission.AccessService;
+import dev.muhammedesmer.customjukeboxdiscs.permission.AccessSubject;
 import dev.muhammedesmer.customjukeboxdiscs.command.CustomDiscsCommand;
 import dev.muhammedesmer.customjukeboxdiscs.storage.BoundedAudioInspector;
 import dev.muhammedesmer.customjukeboxdiscs.storage.FileTrackStorage;
@@ -212,7 +213,7 @@ public final class ServerRuntime implements ModPayloads.ServerHandler {
         // never match, which broke every write on a dedicated server.
         long fingerprint = writer.inputFingerprint();
         BeginUploadResult result = uploads.begin(
-                player.getUUID(), isOperator(player) ? 3 : 0,
+                uploadSubject(player),
                 new BeginUpload(payload.clientHash(), payload.declaredBytes(), payload.formatHint(),
                         payload.title(), player.getGameProfile().name()));
         if (result.alreadyPresent()) {
@@ -256,7 +257,7 @@ public final class ServerRuntime implements ModPayloads.ServerHandler {
         // Server's own fingerprint, see begin(): a client value would never match across JVMs.
         long fingerprint = writer.inputFingerprint();
         UUID playerId = player.getUUID();
-        int permissionLevel = isOperator(player) ? 3 : 0;
+        AccessSubject subject = uploadSubject(player);
         String uploaderName = player.getGameProfile().name();
         ioExecutor.execute(() -> {
             java.nio.file.Path temporary;
@@ -272,7 +273,7 @@ public final class ServerRuntime implements ModPayloads.ServerHandler {
                 server.execute(() -> send(player, new UploadResult(downloaded, null)));
                 return;
             }
-            uploads.ingestDownloaded(playerId, permissionLevel, payload.title(), uploaderName, temporary,
+            uploads.ingestDownloaded(subject, payload.title(), uploaderName, temporary,
                             () -> writer.inputFingerprint() == fingerprint
                                     && player.containerMenu instanceof DiscWriterMenu open
                                     && open.writer() == writer)
@@ -285,6 +286,12 @@ public final class ServerRuntime implements ModPayloads.ServerHandler {
                         send(player, new UploadResult(finalError, finalError == UploadError.NONE ? result.track() : null));
                     });
         });
+    }
+
+    private AccessSubject uploadSubject(ServerPlayer player) {
+        return server.isSingleplayerOwner(player.nameAndId())
+                ? AccessSubject.singleplayerOwner(player.getUUID())
+                : AccessSubject.player(player.getUUID(), isOperator(player) ? 3 : 0);
     }
 
     @Override

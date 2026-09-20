@@ -22,6 +22,7 @@ import dev.hoodoo.customjukeboxdiscs.network.packet.PacketUrlUploadRequest;
 import dev.hoodoo.customjukeboxdiscs.permission.AccessPolicySavedData;
 import dev.hoodoo.customjukeboxdiscs.permission.AccessService;
 import dev.hoodoo.customjukeboxdiscs.permission.DefaultAccessService;
+import dev.hoodoo.customjukeboxdiscs.permission.AccessSubject;
 import dev.hoodoo.customjukeboxdiscs.storage.BoundedAudioInspector;
 import dev.hoodoo.customjukeboxdiscs.storage.FileTrackStorage;
 import dev.hoodoo.customjukeboxdiscs.storage.TrackCatalogSavedData;
@@ -174,8 +175,7 @@ public final class ServerRuntime {
         long fingerprint = writer.inputFingerprint();
 
         BeginUploadResult result = uploads.begin(
-                player.getUniqueID(),
-                getPermissionLevel(player),
+                uploadSubject(player),
                 new BeginUpload(payload.getClientHash(), payload.getDeclaredBytes(), payload.getFormatHint(),
                         payload.getTitle(), player.getName()));
 
@@ -222,7 +222,7 @@ public final class ServerRuntime {
                 Duration.ofSeconds(ForgeServerConfig.uploadTimeoutSeconds));
 
         UUID playerId = player.getUniqueID();
-        int perm = getPermissionLevel(player);
+        AccessSubject subject = uploadSubject(player);
         String uploaderName = player.getName();
 
         ioExecutor.execute(() -> {
@@ -239,7 +239,7 @@ public final class ServerRuntime {
                 server.addScheduledTask(() -> send(player, new PacketUploadResult(downloaded)));
                 return;
             }
-            uploads.ingestDownloaded(playerId, perm, payload.getTitle(), uploaderName, temporary,
+            uploads.ingestDownloaded(subject, payload.getTitle(), uploaderName, temporary,
                             () -> writer.inputFingerprint() == fingerprint
                                     && player.openContainer == container)
                     .thenAccept(result -> {
@@ -257,6 +257,13 @@ public final class ServerRuntime {
                         });
                     });
         });
+    }
+
+    private AccessSubject uploadSubject(EntityPlayerMP player) {
+        String owner = server.getServerOwner();
+        return server.isSinglePlayer() && owner != null && owner.equalsIgnoreCase(player.getName())
+                ? AccessSubject.singleplayerOwner(player.getUniqueID())
+                : AccessSubject.player(player.getUniqueID(), getPermissionLevel(player));
     }
 
     public void handleUploadChunk(EntityPlayerMP player, PacketUploadChunk payload) {
