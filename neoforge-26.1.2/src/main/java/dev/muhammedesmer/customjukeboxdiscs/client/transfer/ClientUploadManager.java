@@ -135,9 +135,10 @@ public final class ClientUploadManager implements ModPayloads.ClientHandler {
                 ClientPlaybackManager.INSTANCE.cacheLocal(current.file, result.track());
             }
             finishStatus(current, result.error() == UploadError.NONE
-                    ? Component.translatable("upload.customjukeboxdiscs.complete")
+                    ? Component.translatable("upload.customjukeboxdiscs.complete_named", result.track().title())
                     : Component.translatable("upload.customjukeboxdiscs.failed",
-                            Component.translatable(result.error().translationKey())));
+                            Component.translatable(result.error().translationKey())),
+                    result.error() == UploadError.NONE);
         }
     }
 
@@ -161,10 +162,14 @@ public final class ClientUploadManager implements ModPayloads.ClientHandler {
     }
 
     private void finishStatus(Pending current, Component message) {
+        finishStatus(current, message, false);
+    }
+
+    private void finishStatus(Pending current, Component message, boolean successful) {
         pending = null;
         Minecraft.getInstance().execute(() -> {
             current.status.accept(message);
-            current.progress.accept(0.0);
+            current.progress.accept(successful ? 1.0 : 0.0);
         });
     }
 

@@ -39,9 +39,9 @@ public class GuiDiscWriter extends GuiContainer implements ClientLibraryManager.
     private static final int VISIBLE_ROWS = 4;
     private static final int LIBRARY_ROW_HEIGHT = 22;
     private static final int PROGRESS_X = 8;
-    private static final int PROGRESS_Y = 129;
+    private static final int PROGRESS_Y = 134;
     private static final int PROGRESS_WIDTH = 176;
-    private static final int PROGRESS_HEIGHT = 5;
+    private static final int PROGRESS_HEIGHT = 3;
 
     private final Path uploadDirectory = Minecraft.getMinecraft().gameDir.toPath().resolve("customjukeboxdiscs/uploads");
     private final ContainerDiscWriter containerWriter;
@@ -165,7 +165,7 @@ public class GuiDiscWriter extends GuiContainer implements ClientLibraryManager.
         }
         String url = urlField.getText().trim();
         String sanitized = UploadFileScanner.sanitizeTitle(titleField.getText());
-        if (sanitized.isEmpty()) {
+        if (sanitized.isEmpty() && url.isEmpty()) {
             status = new TextComponentString(TextFormatting.RED + I18n.format("screen.customjukeboxdiscs.disc_writer.empty_title"));
             return;
         }
@@ -287,7 +287,10 @@ public class GuiDiscWriter extends GuiContainer implements ClientLibraryManager.
         int statusY = serverLibrary ? 132 : 114;
         if (serverLibrary) fontRenderer.drawString(libraryPage + "/" + libraryPageCount, LIST_X, statusY, 0x5A4935);
         if (!statusStr.isEmpty()) {
-            fontRenderer.drawString(fontRenderer.trimStringToWidth(statusStr, this.xSize - statusX - 8), statusX, statusY, 0x404040);
+            java.util.List<String> lines = fontRenderer.listFormattedStringToWidth(statusStr, this.xSize - statusX - 8);
+            for (int index = 0; index < Math.min(2, lines.size()); index++) {
+                fontRenderer.drawString(lines.get(index), statusX, statusY + index * 9, 0x404040);
+            }
         }
     }
 

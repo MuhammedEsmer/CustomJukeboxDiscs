@@ -239,7 +239,8 @@ public final class ServerRuntime {
                 server.addScheduledTask(() -> send(player, new PacketUploadResult(downloaded)));
                 return;
             }
-            uploads.ingestDownloaded(subject, payload.getTitle(), uploaderName, temporary,
+            String title = payload.getTitle().trim().isEmpty() ? titleFromUrl(payload.getUrl()) : payload.getTitle();
+            uploads.ingestDownloaded(subject, title, uploaderName, temporary,
                             () -> writer.inputFingerprint() == fingerprint
                                     && player.openContainer == container)
                     .thenAccept(result -> {
@@ -264,6 +265,17 @@ public final class ServerRuntime {
         return server.isSinglePlayer() && owner != null && owner.equalsIgnoreCase(player.getName())
                 ? AccessSubject.singleplayerOwner(player.getUniqueID())
                 : AccessSubject.player(player.getUniqueID(), getPermissionLevel(player));
+    }
+
+    private static String titleFromUrl(String value) {
+        try {
+            String path = new java.net.URI(value).getPath();
+            String name = path == null ? "" : path.substring(path.lastIndexOf('/') + 1);
+            int extension = name.lastIndexOf('.');
+            return extension > 0 ? name.substring(0, extension) : (name.trim().isEmpty() ? "Custom Track" : name);
+        } catch (java.net.URISyntaxException ignored) {
+            return "Custom Track";
+        }
     }
 
     public void handleUploadChunk(EntityPlayerMP player, PacketUploadChunk payload) {

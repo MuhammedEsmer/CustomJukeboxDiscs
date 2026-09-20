@@ -142,9 +142,10 @@ public final class ClientUploadManager {
                 ClientPlaybackManager.getInstance().cacheLocal(current.file, result.getTrack());
             }
             finishStatus(current, result.getError() == UploadError.NONE
-                    ? new TextComponentTranslation("upload.customjukeboxdiscs.complete")
+                    ? new TextComponentTranslation("upload.customjukeboxdiscs.complete_named", result.getTrack().getTitle())
                     : new TextComponentTranslation("upload.customjukeboxdiscs.failed",
-                            new TextComponentTranslation(result.getError().translationKey())));
+                            new TextComponentTranslation(result.getError().translationKey())),
+                    result.getError() == UploadError.NONE);
         }
     }
 
@@ -158,10 +159,14 @@ public final class ClientUploadManager {
     }
 
     private void finishStatus(Pending current, ITextComponent message) {
+        finishStatus(current, message, false);
+    }
+
+    private void finishStatus(Pending current, ITextComponent message, boolean successful) {
         pending = null;
         Minecraft.getMinecraft().addScheduledTask(() -> {
             current.status.accept(message);
-            current.progress.accept(0.0);
+            current.progress.accept(successful ? 1.0 : 0.0);
         });
     }
 

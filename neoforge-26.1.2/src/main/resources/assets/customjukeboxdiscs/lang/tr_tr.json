@@ -13,6 +13,7 @@
   "screen.customjukeboxdiscs.disc_writer.upload": "Yükle",
   "upload.customjukeboxdiscs.busy": "Başka bir yükleme sürüyor",
   "upload.customjukeboxdiscs.complete": "Yükleme tamamlandı",
+  "upload.customjukeboxdiscs.complete_named": "Yazıldı: %s",
   "upload.customjukeboxdiscs.failed": "Yükleme başarısız: %s",
   "upload.customjukeboxdiscs.hashing": "Hazırlanıyor…",
   "upload.customjukeboxdiscs.progress": "Yükleniyor: %%%s",

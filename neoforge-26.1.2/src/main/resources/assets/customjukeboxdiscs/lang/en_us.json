@@ -13,6 +13,7 @@
   "screen.customjukeboxdiscs.disc_writer.upload": "Upload",
   "upload.customjukeboxdiscs.busy": "Another upload is active",
   "upload.customjukeboxdiscs.complete": "Upload complete",
+  "upload.customjukeboxdiscs.complete_named": "Written: %s",
   "upload.customjukeboxdiscs.failed": "Upload failed: %s",
   "upload.customjukeboxdiscs.hashing": "Preparing…",
   "upload.customjukeboxdiscs.progress": "Uploading: %s%%",

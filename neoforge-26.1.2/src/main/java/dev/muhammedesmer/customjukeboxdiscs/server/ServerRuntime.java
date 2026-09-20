@@ -273,7 +273,8 @@ public final class ServerRuntime implements ModPayloads.ServerHandler {
                 server.execute(() -> send(player, new UploadResult(downloaded, null)));
                 return;
             }
-            uploads.ingestDownloaded(subject, payload.title(), uploaderName, temporary,
+            String title = payload.title().isBlank() ? titleFromUrl(payload.url()) : payload.title();
+            uploads.ingestDownloaded(subject, title, uploaderName, temporary,
                             () -> writer.inputFingerprint() == fingerprint
                                     && player.containerMenu instanceof DiscWriterMenu open
                                     && open.writer() == writer)
@@ -292,6 +293,17 @@ public final class ServerRuntime implements ModPayloads.ServerHandler {
         return server.isSingleplayerOwner(player.nameAndId())
                 ? AccessSubject.singleplayerOwner(player.getUUID())
                 : AccessSubject.player(player.getUUID(), isOperator(player) ? 3 : 0);
+    }
+
+    private static String titleFromUrl(String value) {
+        try {
+            String path = new java.net.URI(value).getPath();
+            String name = path == null ? "" : path.substring(path.lastIndexOf('/') + 1);
+            int extension = name.lastIndexOf('.');
+            return extension > 0 ? name.substring(0, extension) : (name.isBlank() ? "Custom Track" : name);
+        } catch (java.net.URISyntaxException ignored) {
+            return "Custom Track";
+        }
     }
 
     @Override
