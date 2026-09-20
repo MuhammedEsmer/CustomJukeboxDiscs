@@ -100,13 +100,9 @@ public final class BoundedAudioInspector implements AudioInspector {
             }
         }
 
-        // 4. Fallback by filename
-        String filename = path.getFileName() != null ? path.getFileName().toString().toLowerCase(Locale.ROOT) : "";
-        if (filename.endsWith(".ogg")) return AudioFormat.OGG;
-        if (filename.endsWith(".mp3")) return AudioFormat.MP3;
-
-        // 5. Default to MP3
-        return AudioFormat.MP3;
+        throw new AudioValidationException(
+                AudioValidationException.Reason.UNSUPPORTED_FORMAT,
+                "audio signature is unsupported");
     }
 
     private static long inspectMp3(Path path, Duration maxDuration) throws IOException {

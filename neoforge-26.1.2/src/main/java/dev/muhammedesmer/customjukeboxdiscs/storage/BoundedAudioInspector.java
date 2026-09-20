@@ -18,6 +18,7 @@ import org.gagravarr.vorbis.VorbisFile;
 
 public final class BoundedAudioInspector implements AudioInspector {
     private static final int COPY_BUFFER_BYTES = 16 * 1024;
+    private static final int SIGNATURE_SCAN_BYTES = 8 * 1024;
 
     @Override
     public InspectionResult inspect(Path path, long maxBytes, Duration maxDuration) throws IOException {
@@ -44,29 +45,37 @@ public final class BoundedAudioInspector implements AudioInspector {
     }
 
     private static AudioFormat detectFormat(Path path) throws IOException {
-        byte[] signature = new byte[4];
+        byte[] signature = new byte[SIGNATURE_SCAN_BYTES];
+        int read;
         try (InputStream input = Files.newInputStream(path)) {
-            if (input.read(signature) < signature.length) {
-                if (signature[0] == 'O' && signature[1] == 'g' && signature[2] == 'g' && signature[3] == 'S') {
-                    return AudioFormat.OGG;
-                }
-                throw new AudioValidationException(
-                        AudioValidationException.Reason.UNSUPPORTED_FORMAT,
-                        "audio signature is unsupported");
+            read = input.read(signature);
+        }
+        for (int offset = 0; offset < read; offset++) {
+            if (offset + 3 < read
+                    && signature[offset] == 'O' && signature[offset + 1] == 'g'
+                    && signature[offset + 2] == 'g' && signature[offset + 3] == 'S') {
+                return AudioFormat.OGG;
             }
-        }
-
-        if (signature[0] == 'O' && signature[1] == 'g' && signature[2] == 'g' && signature[3] == 'S') {
-            return AudioFormat.OGG;
-        }
-        boolean id3 = signature[0] == 'I' && signature[1] == 'D' && signature[2] == '3';
-        boolean frameSync = (signature[0] & 0xFF) == 0xFF && (signature[1] & 0xE0) == 0xE0;
-        if (id3 || frameSync) {
-            return AudioFormat.MP3;
+            if (offset + 2 < read
+                    && signature[offset] == 'I' && signature[offset + 1] == 'D' && signature[offset + 2] == '3') {
+                return AudioFormat.MP3;
+            }
+            if (offset + 2 < read && isMpegFrameHeader(signature, offset)) {
+                return AudioFormat.MP3;
+            }
         }
         throw new AudioValidationException(
                 AudioValidationException.Reason.UNSUPPORTED_FORMAT,
                 "audio signature is unsupported");
+    }
+
+    private static boolean isMpegFrameHeader(byte[] bytes, int offset) {
+        if ((bytes[offset] & 0xFF) != 0xFF || (bytes[offset + 1] & 0xE0) != 0xE0) return false;
+        int version = (bytes[offset + 1] >> 3) & 0x03;
+        int layer = (bytes[offset + 1] >> 1) & 0x03;
+        int bitrate = (bytes[offset + 2] >> 4) & 0x0F;
+        int sampleRate = (bytes[offset + 2] >> 2) & 0x03;
+        return version != 1 && layer != 0 && bitrate != 0 && bitrate != 15 && sampleRate != 3;
     }
 
     private static long inspectMp3(Path path, Duration maxDuration) throws IOException {
