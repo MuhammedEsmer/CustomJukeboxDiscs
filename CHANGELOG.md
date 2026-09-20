@@ -4,6 +4,25 @@ All notable changes to Custom Jukebox Discs. Versions follow [semantic versionin
 1.0.0 is reserved for the first release considered feature complete. Per-version notes for uploading
 live in `docs/changelogs/`.
 
+## 0.3.0
+
+### Changed
+
+- Unified the NeoForge 1.21.1, NeoForge 26.1.2 and Forge 1.12.2 releases under one version.
+- New dedicated-server worlds now allow disc writing for everyone by default; existing saved access modes are preserved.
+- Singleplayer world owners can always write discs, including hardcore worlds and worlds with cheats disabled.
+- Link writes may leave the title empty; direct links derive a readable title from the file name.
+- Raised new-server defaults to 25 MiB per source and a 120-second upload timeout.
+
+### Fixed
+
+- Valid MP3 files with metadata or padding before the first audio frame are no longer rejected as unsupported.
+- Files merely renamed to `.mp3` are still rejected when they contain no valid MP3 stream.
+- Newly uploaded local tracks are copied into the client cache so freshly written discs can play immediately.
+- Server Library writes use the server's current Disc Writer slot state instead of a client-side identity value.
+- Short, unique hashes printed by the track list command can be used for deletion; ambiguous prefixes are rejected.
+- Disc Writer status messages wrap within the interface, successful writes keep the progress bar full, and the written track name is shown.
+
 ## 0.2.10
 
 ### Changed

@@ -18,7 +18,7 @@ import net.minecraftforge.fml.common.event.FMLServerStoppedEvent;
 public class CustomJukeboxDiscs {
     public static final String MOD_ID = "customjukeboxdiscs";
     public static final String NAME = "Custom Jukebox Discs";
-    public static final String VERSION = "0.2.8";
+    public static final String VERSION = "0.3.0";
 
     @Mod.Instance(MOD_ID)
     public static CustomJukeboxDiscs instance;
