@@ -370,7 +370,7 @@ public final class ServerRuntime {
         send(player, new PacketLibraryPageResponse(page.page(), page.pageCount(), page.totalTracks(), tracks));
     }
 
-    public void handleLibraryWrite(EntityPlayerMP player, String sha256, long inputFingerprint) {
+    public void handleLibraryWrite(EntityPlayerMP player, String sha256) {
         if (!(player.openContainer instanceof ContainerDiscWriter)) {
             send(player, new PacketLibraryWriteResponse(PacketLibraryWriteResponse.Result.INVALID_WRITER));
             return;
@@ -383,7 +383,8 @@ public final class ServerRuntime {
             send(player, new PacketLibraryWriteResponse(PacketLibraryWriteResponse.Result.TRACK_UNAVAILABLE));
             return;
         }
-        if (!writer.isUsableByPlayer(player) || !writer.writeDisc(inputFingerprint, metadata.get().reference())) {
+        if (!writer.isUsableByPlayer(player)
+                || !writer.writeDisc(writer.inputFingerprint(), metadata.get().reference())) {
             send(player, new PacketLibraryWriteResponse(PacketLibraryWriteResponse.Result.INVALID_WRITER));
             return;
         }

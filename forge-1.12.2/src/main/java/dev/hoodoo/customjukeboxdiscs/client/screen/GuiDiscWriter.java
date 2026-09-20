@@ -160,7 +160,7 @@ public class GuiDiscWriter extends GuiContainer implements ClientLibraryManager.
                 status = new TextComponentString(I18n.format("screen.customjukeboxdiscs.disc_writer.library_empty"));
                 return;
             }
-            ClientLibraryManager.getInstance().write(libraryTracks.get(selected).getSha256(), containerWriter.inputFingerprint());
+            ClientLibraryManager.getInstance().write(libraryTracks.get(selected).getSha256());
             return;
         }
         String url = urlField.getText().trim();

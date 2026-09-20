@@ -35,7 +35,7 @@ final class LibraryPayloadCodecTest {
 
     @Test
     void writeRequest_InvalidHash_ThrowsIllegalArgumentException() {
-        assertThrows(IllegalArgumentException.class, () -> new LibraryWriteRequest("A".repeat(64), 1L));
+        assertThrows(IllegalArgumentException.class, () -> new LibraryWriteRequest("A".repeat(64)));
     }
 
     private static TrackReference track(String seed) {

@@ -35,7 +35,7 @@ final class LibraryPacketTest {
 
     @Test
     void writeRequest_InvalidHash_ThrowsIllegalArgumentException() {
-        assertThrows(IllegalArgumentException.class, () -> new PacketLibraryWriteRequest(hash("A"), 1L));
+        assertThrows(IllegalArgumentException.class, () -> new PacketLibraryWriteRequest(hash("A")));
     }
 
     private static TrackReference track() {

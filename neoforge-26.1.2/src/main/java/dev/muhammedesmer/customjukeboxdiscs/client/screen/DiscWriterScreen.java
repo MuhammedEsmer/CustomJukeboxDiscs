@@ -146,7 +146,7 @@ public final class DiscWriterScreen extends AbstractContainerScreen<DiscWriterMe
                 status = Component.translatable("screen.customjukeboxdiscs.disc_writer.library_empty");
                 return;
             }
-            ClientLibraryManager.INSTANCE.write(libraryTracks.get(selected).sha256(), menu.inputFingerprint());
+            ClientLibraryManager.INSTANCE.write(libraryTracks.get(selected).sha256());
             return;
         }
         String url = urlBox.getValue().strip();

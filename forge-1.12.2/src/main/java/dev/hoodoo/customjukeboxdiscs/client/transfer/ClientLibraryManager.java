@@ -20,7 +20,7 @@ public final class ClientLibraryManager {
     public void attach(Listener listener) { this.listener = listener; }
     public void detach(Listener listener) { if (this.listener == listener) this.listener = null; }
     public void requestPage(int page) { ModNetwork.CHANNEL.sendToServer(new PacketLibraryPageRequest(Math.max(1, page))); }
-    public void write(String sha256, long fingerprint) { ModNetwork.CHANNEL.sendToServer(new PacketLibraryWriteRequest(sha256, fingerprint)); }
+    public void write(String sha256) { ModNetwork.CHANNEL.sendToServer(new PacketLibraryWriteRequest(sha256)); }
     public void handle(PacketLibraryPageResponse response) { if (listener != null) listener.onLibraryPage(response); }
     public void handle(PacketLibraryWriteResponse response) { if (listener != null) listener.onLibraryWrite(response); }
 }

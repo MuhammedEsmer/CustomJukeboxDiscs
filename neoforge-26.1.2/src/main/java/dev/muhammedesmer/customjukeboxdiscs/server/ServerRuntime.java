@@ -193,7 +193,7 @@ public final class ServerRuntime implements ModPayloads.ServerHandler {
                 send(player, new LibraryWriteResponse(LibraryWriteResponse.Result.TRACK_UNAVAILABLE));
                 return;
             }
-            if (!writer.writeDisc(payload.inputFingerprint(), metadata.get().reference())) {
+            if (!writer.writeDisc(writer.inputFingerprint(), metadata.get().reference())) {
                 send(player, new LibraryWriteResponse(LibraryWriteResponse.Result.INVALID_WRITER));
                 return;
             }

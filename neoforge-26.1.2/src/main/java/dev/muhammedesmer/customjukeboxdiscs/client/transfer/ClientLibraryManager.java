@@ -27,8 +27,8 @@ public final class ClientLibraryManager {
         ClientPacketDistributor.sendToServer(new LibraryPageRequest(Math.max(1, page)));
     }
 
-    public void write(String sha256, long inputFingerprint) {
-        ClientPacketDistributor.sendToServer(new LibraryWriteRequest(sha256, inputFingerprint));
+    public void write(String sha256) {
+        ClientPacketDistributor.sendToServer(new LibraryWriteRequest(sha256));
     }
 
     public void handle(LibraryPageResponse response) {
