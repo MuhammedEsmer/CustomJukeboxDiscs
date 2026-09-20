@@ -37,7 +37,8 @@ public class GuiDiscWriter extends GuiContainer implements ClientLibraryManager.
     private static final int LIST_WIDTH = 144;
     private static final int ROW_HEIGHT = 13;
     private static final int VISIBLE_ROWS = 4;
-    private static final int LIBRARY_ROW_HEIGHT = 22;
+    private static final int LIBRARY_VISIBLE_ROWS = 3;
+    private static final int LIBRARY_ROW_HEIGHT = 27;
     private static final int PROGRESS_X = 8;
     private static final int PROGRESS_Y = 134;
     private static final int PROGRESS_WIDTH = 176;
@@ -221,10 +222,11 @@ public class GuiDiscWriter extends GuiContainer implements ClientLibraryManager.
         super.handleMouseInput();
         int dWheel = Mouse.getEventDWheel();
         int size = serverLibrary ? libraryTracks.size() : files.size();
-        if (dWheel != 0 && size > VISIBLE_ROWS) {
+        int visibleRows = visibleRows();
+        if (dWheel != 0 && size > visibleRows) {
             if (dWheel > 0) scroll--;
             if (dWheel < 0) scroll++;
-            scroll = MathHelper.clamp(scroll, 0, size - VISIBLE_ROWS);
+            scroll = MathHelper.clamp(scroll, 0, size - visibleRows);
         }
     }
 
@@ -243,7 +245,7 @@ public class GuiDiscWriter extends GuiContainer implements ClientLibraryManager.
 
         int rowHeight = serverLibrary ? LIBRARY_ROW_HEIGHT : ROW_HEIGHT;
         int size = serverLibrary ? libraryTracks.size() : files.size();
-        if (localX >= 0 && localX < LIST_WIDTH && localY >= 0 && localY < VISIBLE_ROWS * rowHeight) {
+        if (localX >= 0 && localX < LIST_WIDTH && localY >= 0 && localY < visibleRows() * rowHeight) {
             int row = localY / rowHeight;
             if (row + scroll < size) {
                 selected = row + scroll;
@@ -253,6 +255,10 @@ public class GuiDiscWriter extends GuiContainer implements ClientLibraryManager.
                 }
             }
         }
+    }
+
+    private int visibleRows() {
+        return serverLibrary ? LIBRARY_VISIBLE_ROWS : VISIBLE_ROWS;
     }
 
     @Override
@@ -338,16 +344,17 @@ public class GuiDiscWriter extends GuiContainer implements ClientLibraryManager.
                     left + LIST_X + 3, top + LIST_Y + 4, 0x686868);
             return;
         }
-        for (int row = 0; row < VISIBLE_ROWS && row + scroll < libraryTracks.size(); row++) {
+        for (int row = 0; row < LIBRARY_VISIBLE_ROWS && row + scroll < libraryTracks.size(); row++) {
             int index = row + scroll;
             TrackReference track = libraryTracks.get(index);
             int y = top + LIST_Y + row * LIBRARY_ROW_HEIGHT;
-            if (index == selected) drawRect(left + LIST_X, y, left + LIST_X + LIST_WIDTH, y + 21, 0xFF8B6B34);
+            drawRect(left + LIST_X, y, left + LIST_X + LIST_WIDTH, y + LIBRARY_ROW_HEIGHT - 1,
+                    index == selected ? 0xFF8B6B34 : 0x221F170F);
             int color = index == selected ? 0xFFFFFF : 0x3F3528;
-            fontRenderer.drawString(fontRenderer.trimStringToWidth(track.getTitle(), LIST_WIDTH - 6), left + LIST_X + 3, y + 2, color);
+            fontRenderer.drawString(fontRenderer.trimStringToWidth(track.getTitle(), LIST_WIDTH - 6), left + LIST_X + 3, y + 3, color);
             String details = track.getUploaderName() + " · " + duration(track.getDurationMillis()) + " · "
                     + track.getFormat().serializedName().toUpperCase(java.util.Locale.ROOT);
-            fontRenderer.drawString(fontRenderer.trimStringToWidth(details, LIST_WIDTH - 6), left + LIST_X + 3, y + 12,
+            fontRenderer.drawString(fontRenderer.trimStringToWidth(details, LIST_WIDTH - 6), left + LIST_X + 3, y + 16,
                     index == selected ? 0xF0DFC1 : 0x776A58);
         }
     }

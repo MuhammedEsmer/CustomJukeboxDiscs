@@ -35,7 +35,8 @@ public final class DiscWriterScreen extends AbstractContainerScreen<DiscWriterMe
     private static final int LIST_WIDTH = 144;
     private static final int ROW_HEIGHT = 13;
     private static final int VISIBLE_ROWS = 4;
-    private static final int LIBRARY_ROW_HEIGHT = 22;
+    private static final int LIBRARY_VISIBLE_ROWS = 3;
+    private static final int LIBRARY_ROW_HEIGHT = 27;
     private static final int PROGRESS_X = 8;
     private static final int PROGRESS_Y = 134;
     private static final int PROGRESS_WIDTH = 176;
@@ -223,8 +224,9 @@ public final class DiscWriterScreen extends AbstractContainerScreen<DiscWriterMe
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double deltaX, double deltaY) {
         int size = serverLibrary ? libraryTracks.size() : files.size();
-        if (rowAt(mouseX, mouseY) >= 0 && size > VISIBLE_ROWS) {
-            scroll = net.minecraft.util.Mth.clamp(scroll - (int) Math.signum(deltaY), 0, size - VISIBLE_ROWS);
+        int visibleRows = visibleRows();
+        if (rowAt(mouseX, mouseY) >= 0 && size > visibleRows) {
+            scroll = net.minecraft.util.Mth.clamp(scroll - (int) Math.signum(deltaY), 0, size - visibleRows);
             return true;
         }
         return super.mouseScrolled(mouseX, mouseY, deltaX, deltaY);
@@ -234,8 +236,12 @@ public final class DiscWriterScreen extends AbstractContainerScreen<DiscWriterMe
         int localX = (int) mouseX - leftPos - LIST_X;
         int localY = (int) mouseY - topPos - LIST_Y;
         int rowHeight = serverLibrary ? LIBRARY_ROW_HEIGHT : ROW_HEIGHT;
-        boolean inside = localX >= 0 && localX < LIST_WIDTH && localY >= 0 && localY < VISIBLE_ROWS * rowHeight;
+        boolean inside = localX >= 0 && localX < LIST_WIDTH && localY >= 0 && localY < visibleRows() * rowHeight;
         return inside ? localY / rowHeight : -1;
+    }
+
+    private int visibleRows() {
+        return serverLibrary ? LIBRARY_VISIBLE_ROWS : VISIBLE_ROWS;
     }
 
     @Override
@@ -253,18 +259,19 @@ public final class DiscWriterScreen extends AbstractContainerScreen<DiscWriterMe
                     leftPos + LIST_X + 3, topPos + LIST_Y + 4, 0xFF686868, false);
             return;
         }
-        for (int row = 0; row < VISIBLE_ROWS && row + scroll < libraryTracks.size(); row++) {
+        for (int row = 0; row < LIBRARY_VISIBLE_ROWS && row + scroll < libraryTracks.size(); row++) {
             int index = row + scroll;
             TrackReference track = libraryTracks.get(index);
             int y = topPos + LIST_Y + row * LIBRARY_ROW_HEIGHT;
-            if (index == selected) graphics.fill(leftPos + LIST_X, y, leftPos + LIST_X + LIST_WIDTH, y + 21, 0xFF8B6B34);
+            graphics.fill(leftPos + LIST_X, y, leftPos + LIST_X + LIST_WIDTH, y + LIBRARY_ROW_HEIGHT - 1,
+                    index == selected ? 0xFF8B6B34 : 0x221F170F);
             int color = index == selected ? 0xFFFFFFFF : 0xFF3F3528;
             graphics.text(font, font.plainSubstrByWidth(track.title(), LIST_WIDTH - 6),
-                    leftPos + LIST_X + 3, y + 2, color, false);
+                    leftPos + LIST_X + 3, y + 3, color, false);
             String details = track.uploaderName() + " · " + duration(track.durationMillis()) + " · "
                     + track.format().serializedName().toUpperCase(java.util.Locale.ROOT);
             graphics.text(font, font.plainSubstrByWidth(details, LIST_WIDTH - 6),
-                    leftPos + LIST_X + 3, y + 12, index == selected ? 0xFFF0DFC1 : 0xFF776A58, false);
+                    leftPos + LIST_X + 3, y + 16, index == selected ? 0xFFF0DFC1 : 0xFF776A58, false);
         }
     }
 

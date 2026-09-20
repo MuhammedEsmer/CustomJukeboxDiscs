@@ -22,6 +22,7 @@ live in `docs/changelogs/`.
 - Server Library writes use the server's current Disc Writer slot state instead of a client-side identity value.
 - Short, unique hashes printed by the track list command can be used for deletion; ambiguous prefixes are rejected.
 - Disc Writer status messages wrap within the interface, successful writes keep the progress bar full, and the written track name is shown.
+- Server Library rows no longer overlap or render outside the list panel on the 26.1.2 and 1.12.2 ports.
 
 ## 0.2.10
 
