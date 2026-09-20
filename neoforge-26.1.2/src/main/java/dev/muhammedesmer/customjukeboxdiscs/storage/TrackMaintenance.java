@@ -17,10 +17,17 @@ public final class TrackMaintenance {
     }
 
     /** {@return whether a catalogued track was removed from the catalog and from disk} */
-    public boolean delete(String sha256) throws IOException {
-        boolean removed = catalog.remove(sha256).isPresent();
+    public boolean delete(String hashOrPrefix) throws IOException {
+        if (hashOrPrefix == null || !hashOrPrefix.matches("[0-9a-f]{12,64}")) return false;
+        List<String> matches = catalog.tracks().keySet().stream()
+                .filter(hash -> hash.startsWith(hashOrPrefix))
+                .limit(2)
+                .toList();
+        if (matches.size() != 1) return false;
+        String sha256 = matches.getFirst();
+        catalog.remove(sha256);
         storage.delete(sha256);
-        return removed;
+        return true;
     }
 
     /**

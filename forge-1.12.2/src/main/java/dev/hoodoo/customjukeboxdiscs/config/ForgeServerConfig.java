@@ -9,7 +9,7 @@ import net.minecraftforge.common.config.Configuration;
 public final class ForgeServerConfig {
     public static Configuration config;
 
-    public static long maxSourceBytes = 10 * 1024 * 1024L;
+    public static long maxSourceBytes = 25 * 1024 * 1024L;
     public static long maxDurationSeconds = 600L;
     public static long maxTracksPerPlayer = 20L;
     public static long maxBytesPerPlayer = 100 * 1024 * 1024L;
@@ -17,7 +17,7 @@ public final class ForgeServerConfig {
     public static int maxSessionsPerPlayer = 1;
     public static int chunkBytes = 31 * 1024;
     public static long uploadBytesPerSecond = 512 * 1024L;
-    public static long uploadTimeoutSeconds = 30L;
+    public static long uploadTimeoutSeconds = 120L;
     public static boolean mp3Enabled = true;
     public static boolean oggEnabled = true;
     public static boolean urlUploadsEnabled = true;
@@ -41,7 +41,7 @@ public final class ForgeServerConfig {
             config.load();
 
             String CAT_LIMITS = "limits";
-            maxSourceBytes = getLong(CAT_LIMITS, "maxSourceBytes", 10 * 1024 * 1024L, "Maximum uploaded audio file size in bytes");
+            maxSourceBytes = getLong(CAT_LIMITS, "maxSourceBytes", 25 * 1024 * 1024L, "Maximum uploaded audio file size in bytes");
             maxDurationSeconds = getLong(CAT_LIMITS, "maxDurationSeconds", 600L, "Maximum decoded duration of a track in seconds");
             maxTracksPerPlayer = getLong(CAT_LIMITS, "maxTracksPerPlayer", 20L, "Maximum tracks owned by one player");
             maxBytesPerPlayer = getLong(CAT_LIMITS, "maxBytesPerPlayer", 100 * 1024 * 1024L, "Maximum storage bytes owned by one player");
@@ -49,7 +49,7 @@ public final class ForgeServerConfig {
             maxSessionsPerPlayer = config.get(CAT_LIMITS, "maxSessionsPerPlayer", 1, "Maximum concurrent upload sessions per player").getInt();
             chunkBytes = config.get(CAT_LIMITS, "chunkBytes", 31 * 1024, "Network chunk payload size in bytes").getInt();
             uploadBytesPerSecond = getLong(CAT_LIMITS, "uploadBytesPerSecond", 512 * 1024L, "Allowed upload rate in bytes/sec per player");
-            uploadTimeoutSeconds = getLong(CAT_LIMITS, "uploadTimeoutSeconds", 30L, "Inactivity timeout in seconds for uploads");
+            uploadTimeoutSeconds = getLong(CAT_LIMITS, "uploadTimeoutSeconds", 120L, "Inactivity timeout in seconds for uploads");
             mp3Enabled = config.get(CAT_LIMITS, "mp3Enabled", true, "Allow MP3 audio files").getBoolean();
             oggEnabled = config.get(CAT_LIMITS, "oggEnabled", true, "Allow OGG Vorbis audio files").getBoolean();
 

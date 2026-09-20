@@ -98,6 +98,7 @@ public final class ClientUploadManager {
             finishStatus(current, new TextComponentTranslation(
                     "upload.customjukeboxdiscs.failed", new TextComponentTranslation(response.getError().translationKey())));
         } else if (response.getExistingTrack() != null) {
+            ClientPlaybackManager.getInstance().cacheLocal(current.file, response.getExistingTrack());
             finishStatus(current, new TextComponentTranslation("upload.customjukeboxdiscs.complete"));
         } else {
             CompletableFuture.runAsync(() -> upload(current, response));
@@ -137,6 +138,9 @@ public final class ClientUploadManager {
     public void handleUploadResult(PacketUploadResult result) {
         Pending current = pending;
         if (current != null) {
+            if (result.getError() == UploadError.NONE && current.file != null) {
+                ClientPlaybackManager.getInstance().cacheLocal(current.file, result.getTrack());
+            }
             finishStatus(current, result.getError() == UploadError.NONE
                     ? new TextComponentTranslation("upload.customjukeboxdiscs.complete")
                     : new TextComponentTranslation("upload.customjukeboxdiscs.failed",

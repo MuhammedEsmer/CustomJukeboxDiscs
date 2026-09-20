@@ -31,7 +31,7 @@ public final class ServerConfig {
 
     private ServerConfig(ModConfigSpec.Builder builder) {
         builder.push("limits");
-        maxSourceBytes = builder.defineInRange("maxSourceBytes", 10L * MIB, 1L, Integer.MAX_VALUE);
+        maxSourceBytes = builder.defineInRange("maxSourceBytes", 25L * MIB, 1L, Integer.MAX_VALUE);
         maxDurationMillis = builder.defineInRange("maxDurationMillis", 600_000L, 1L, 600_000L);
         maxTracksPerPlayer = builder.defineInRange("maxTracksPerPlayer", 20, 1, 10_000);
         maxBytesPerPlayer = builder.defineInRange("maxBytesPerPlayer", 100L * MIB, 1L, Long.MAX_VALUE);
@@ -39,7 +39,7 @@ public final class ServerConfig {
         maxSessionsPerPlayer = builder.defineInRange("maxSessionsPerPlayer", 1, 1, 16);
         chunkBytes = builder.defineInRange("chunkBytes", 32 * 1024, 1, 1024 * 1024);
         uploadBytesPerSecond = builder.defineInRange("uploadBytesPerSecond", 512 * 1024, 1, Integer.MAX_VALUE);
-        uploadTimeoutMillis = builder.defineInRange("uploadTimeoutMillis", 30_000L, 1L, 3_600_000L);
+        uploadTimeoutMillis = builder.defineInRange("uploadTimeoutMillis", 120_000L, 1L, 3_600_000L);
         builder.pop();
 
         builder.push("formats");
@@ -134,8 +134,8 @@ public final class ServerConfig {
 
         public static Limits defaults() {
             return new Limits(
-                    10L * MIB, 600_000L, 20, 100L * MIB, 2L * 1024L * MIB,
-                    1, 32 * 1024, 512 * 1024, 30_000L, true, true);
+                    25L * MIB, 600_000L, 20, 100L * MIB, 2L * 1024L * MIB,
+                    1, 32 * 1024, 512 * 1024, 120_000L, true, true);
         }
 
         public Limits withMaxSourceBytes(long value) {

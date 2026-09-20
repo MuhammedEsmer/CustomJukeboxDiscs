@@ -71,6 +71,24 @@ public final class ClientTrackCache {
         return Optional.of(target);
     }
 
+    public synchronized Path importVerified(Path source, String hash, AudioFormat format) throws IOException {
+        requireHash(hash);
+        long size = Files.size(source);
+        if (size <= 0 || size > maxBytes) throw new IOException("invalid cached file size");
+        Files.createDirectories(root);
+        Path temporary = root.resolve(hash + ".import.part");
+        try {
+            Files.copy(source, temporary, StandardCopyOption.REPLACE_EXISTING);
+            if (!fileHash(temporary).equals(hash)) throw new IOException("cached file hash mismatch");
+            Path target = target(hash, format);
+            Files.move(temporary, target, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            evict(target);
+            return target;
+        } finally {
+            Files.deleteIfExists(temporary);
+        }
+    }
+
     public synchronized void cancel(String hash) {
         Download download = downloads.remove(hash);
         if (download == null) return;

@@ -102,6 +102,18 @@ public final class ClientPlaybackManager {
         }
     }
 
+    public void cacheLocal(Path source, TrackReference track) {
+        if (source == null || track == null) return;
+        ClientTrackCache current = cache();
+        io.execute(() -> {
+            try {
+                current.importVerified(source, track.sha256(), track.format());
+            } catch (IOException ignored) {
+                // Playback can still retrieve the validated server copy on demand.
+            }
+        });
+    }
+
     private void retryOrFail(String hash) {
         int attempts = retries.merge(hash, 1, Integer::sum);
         if (attempts <= 1 && pending.containsKey(hash)) ClientPacketDistributor.sendToServer(new TrackRequest(hash));

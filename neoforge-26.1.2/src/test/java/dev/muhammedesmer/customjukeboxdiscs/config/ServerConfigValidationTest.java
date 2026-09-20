@@ -12,7 +12,7 @@ final class ServerConfigValidationTest {
         ServerConfig.Limits server = ServerConfig.Limits.defaults();
         ClientConfig.Limits client = ClientConfig.Limits.defaults();
 
-        assertEquals(10L * 1024 * 1024, server.maxSourceBytes());
+        assertEquals(25L * 1024 * 1024, server.maxSourceBytes());
         assertEquals(600_000L, server.maxDurationMillis());
         assertEquals(20, server.maxTracksPerPlayer());
         assertEquals(100L * 1024 * 1024, server.maxBytesPerPlayer());
@@ -20,7 +20,7 @@ final class ServerConfigValidationTest {
         assertEquals(1, server.maxSessionsPerPlayer());
         assertEquals(32 * 1024, server.chunkBytes());
         assertEquals(512 * 1024, server.uploadBytesPerSecond());
-        assertEquals(30_000L, server.uploadTimeoutMillis());
+        assertEquals(120_000L, server.uploadTimeoutMillis());
         assertEquals(512L * 1024 * 1024, client.maxCacheBytes());
         assertEquals(1_000, client.maxUploadScanFiles());
     }
