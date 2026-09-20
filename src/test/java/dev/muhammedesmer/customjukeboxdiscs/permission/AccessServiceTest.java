@@ -72,6 +72,20 @@ final class AccessServiceTest {
     }
 
     @Test
+    void singleplayerOwnerCannotBeDenied() {
+        service.setMode(AccessMode.OPS);
+        service.deny(PLAYER);
+
+        assertTrue(service.mayUpload(AccessSubject.singleplayerOwner(PLAYER)).allowed());
+    }
+
+    @Test
+    void newPolicyAllowsEveryoneByDefault() {
+        assertEquals(AccessMode.EVERYONE, policy.mode());
+        assertTrue(service.mayUpload(AccessSubject.player(PLAYER, 0)).allowed());
+    }
+
+    @Test
     void removeClearsBothLists() {
         service.allow(PLAYER);
         service.deny(PLAYER);
